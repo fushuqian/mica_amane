@@ -14,6 +14,7 @@ DATA_DIR = Path(os.environ.get("CONSOLE_DATA_DIR", "/data"))
 
 PROXY_URL = "socks5://127.0.0.1:7890"
 SUB_PROXY_URL = "socks5h://127.0.0.1:7890"
+SUB_USER_AGENT = os.environ.get("SUB_USER_AGENT", "mihomo.party/v2.0.4 (clash.meta)")
 
 
 def amane_token() -> str:
@@ -72,7 +73,7 @@ async def fetch_subscription(url: str, timeout: float = 30.0) -> str:
         try:
             kwargs = {"proxy": proxy} if proxy else {}
             async with httpx.AsyncClient(timeout=timeout, follow_redirects=True, **kwargs) as client:
-                resp = await client.get(url, headers={"User-Agent": "amane-stack-console/1.0"})
+                resp = await client.get(url, headers={"User-Agent": SUB_USER_AGENT})
                 resp.raise_for_status()
                 return resp.text
         except Exception as exc:  # noqa: BLE001 - 汇总后统一报错

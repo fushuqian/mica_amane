@@ -9,3 +9,6 @@
 - mihomo 的 `PUT /configs` 有路径白名单：只允许其 home（本例为 `/data/metacubexd`）下的文件，否则报 `path is not subpath of home directory or SAFE_PATHS`。配置页 YAML 因此放在 `/data/metacubexd/console/`。
 - 通过 `PUT /configs` 热加载的配置只在当前进程生效；容器重启后 metacubexd agent 会恢复自己的 active.yaml。需要长期生效请用 metacubexd 的 profile 管理。
 - 国内构建：`deb.debian.org` 可能超时/404，Dockerfile 里把 apt 源换成 `mirrors.aliyun.com`，pip 用阿里云 PyPI 镜像。
+- 部分机场按 User-Agent 放行：默认 UA 与 `clash-verge` 会被拦截/掐断，本机机场要求 `mihomo.party/v2.0.4 (clash.meta)`；已做成 `SUB_USER_AGENT` 环境变量。
+- 订阅服务器可能“慢速滴流 + 不关闭连接”：30 秒只传 12–20KB，httpx 直接超时。后续需改为流式读取并在超时后使用已收到内容。
+- mihomo 的 `geoip.metadb` / `GeoSite.dat` 自动下载可能被截断，导致内核启动报 `MMDB invalid` / `GeoSite.dat invalid`。用 jsdelivr 的 `meta-rules-dat@release` 手动替换 `/data/metacubexd/` 下文件即可恢复。
