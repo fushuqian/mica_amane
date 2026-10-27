@@ -2,6 +2,8 @@
 
 ## 2026-10-28
 
+- 镜像发布到 Docker Hub：`kenzong/mica-amane:latest`（linux/amd64，含 amane + mihomo + 配置页）。
+- 新增 `compose.pull.yaml`：NAS 纯镜像版，不需要代码与构建，粘贴即可启动。
 - 新增 `compose.nas.yaml`：NAS 图形界面（飞牛 fnOS / 群晖 / 威联通）可直接粘贴的 Compose，环境变量内嵌、端口与媒体路径可在界面里改。
 - 新增 `deploy.sh` 一键部署：自动生成 `.env` 与随机 `CLASH_SECRET`、创建数据/媒体目录、端口占用检查、可选构建代理、启动并等待健康；支持 `--amane-port` / `--panel-port` / `--media-dir` / `--proxy` / `--no-build`。
 - compose 端口改为可配置：`${AMANE_PORT:-8000}`、`${PANEL_PORT:-8088}`；`.env.example` 增加对应变量。
