@@ -52,7 +52,7 @@
 
 * 环境变量：`AMANE_DATA_DIR`、`AMANE_LOG_DIR`、`AMANE_TOKEN`（可显式指定）、`AMANE_IMAGE_TOKEN`、`AMANE_SAFE_DIRS`、`AMANE_SUPERVISED=1`（有外部监督者时必须为 1）。
 
-* 应用配置是热配置，接口为 `PATCH /api/config`（顶层 section 两层层级 merge）；网络段为 `network.proxy`（示例 `socks5://127.0.0.1:7890`）。除 `/api/health`、`/api/agent-guide` 外都要 Bearer Token。
+* 应用配置是热配置，接口为 `PATCH /api/config`（顶层 section 两层层级 merge）；网络段为 `network.proxy`（示例 `http://127.0.0.1:7890`）。除 `/api/health`、`/api/agent-guide` 外都要 Bearer Token。
 
 * 官方 Dockerfile 基础镜像为 `python:3.14-slim`，需 `libgomp1`、`postgresql-client`。
 
@@ -282,7 +282,7 @@ TZ=Asia/Shanghai
 | GET | `/healthz` | 存活检查 |
 | GET | `/api/status` | 聚合：amane `/api/health`、metacubexd `/api/control/health`、mihomo `/version` + `/configs`；返回各服务在线状态与版本 |
 | GET | `/api/amane/token` | 返回 `AMANE_TOKEN`（env 未设置则读 `/data/amane/token`） |
-| POST | `/api/amane/proxy` | `PATCH http://127.0.0.1:8000/api/config`，body `{"network":{"proxy":"socks5://127.0.0.1:7890"}}` |
+| POST | `/api/amane/proxy` | `PATCH http://127.0.0.1:8000/api/config`，body `{"network":{"proxy":"http://127.0.0.1:7890"}}` |
 | GET | `/api/mihomo/config` | 透传 mihomo `GET /configs` |
 | GET | `/api/mihomo/proxies` | 透传 `GET /proxies`，前端只展示 selector/urltest 组 |
 | POST | `/api/mihomo/select` | 透传 `PUT /proxies/{group}` |
@@ -336,7 +336,7 @@ TZ=Asia/Shanghai
    - `docker port amane-stack` **不包含 7890**
 5. 浏览器：
    - `:8088` 配置页能登录、状态正确、Token 可复制。
-   - 点「设置 amane 代理」后，amane「设置 → 网络 → 代理」显示 `socks5://127.0.0.1:7890`。
+   - 点「设置 amane 代理」后，amane「设置 → 网络 → 代理」显示 `http://127.0.0.1:7890`。
    - `:8080` metacubexd 能连上 `9090`，节点/规则/日志可用。
    - `:8000` amane 正常登录（Token 与配置页一致）。
 6. 订阅导入：用一份测试订阅 URL，确认 `/data/metacubexd/console/mihomo.yaml` 生成、mihomo `GET /proxies` 出现新节点。

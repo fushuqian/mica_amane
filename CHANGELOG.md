@@ -13,3 +13,4 @@
 - 验证通过：容器 healthy；8000/8080/8088/9090 正常，7890 未映射；amane 代理设置、订阅导入与热加载、重启持久化均通过。
 - 新增 `SUB_USER_AGENT`（默认 `mihomo.party/v2.0.4 (clash.meta)`），适配按 UA 放行的机场。
 - 修复 mihomo 内核启动失败：`geoip.metadb` / `GeoSite.dat` 自动下载被截断，已用 jsdelivr 的有效数据替换。
+- 配置页调整：amane 面板只保留「进入 amane」按钮；一键设置 amane 出网代理移到 Mihomo 页并改用 HTTP 协议（`http://127.0.0.1:7890`）。

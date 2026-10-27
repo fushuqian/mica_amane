@@ -12,7 +12,7 @@ METACUBEXD_URL = os.environ.get("CONSOLE_METACUBEXD_URL", "http://127.0.0.1:8080
 CLASH_SECRET = os.environ.get("CLASH_SECRET", "")
 DATA_DIR = Path(os.environ.get("CONSOLE_DATA_DIR", "/data"))
 
-PROXY_URL = "socks5://127.0.0.1:7890"
+PROXY_URL = "http://127.0.0.1:7890"
 SUB_PROXY_URL = "socks5h://127.0.0.1:7890"
 SUB_USER_AGENT = os.environ.get("SUB_USER_AGENT", "mihomo.party/v2.0.4 (clash.meta)")
 

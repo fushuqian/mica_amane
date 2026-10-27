@@ -33,15 +33,7 @@
         <div class="panel">
           <h2>amane</h2>
           <p class="muted">影库刮削服务，端口 8000。</p>
-          <div class="row">
-            <label>API Token</label>
-            <code id="amane-token">加载中…</code>
-            <button id="copy-token" class="btn small">复制</button>
-          </div>
-          <div class="row">
-            <button id="set-proxy" class="btn primary">把出网代理设为 127.0.0.1:7890</button>
-          </div>
-          <p class="hint">设置后 amane 的刮削请求会经容器内 mihomo 出国，7890 无需暴露到宿主机。</p>
+          <a id="link-amane" class="btn primary" target="_blank" rel="noopener">进入 amane</a>
         </div>
         <div class="panel">
           <h2>mihomo</h2>
@@ -53,6 +45,14 @@
     </section>
 
     <section id="tab-mihomo" class="tab-panel">
+      <div class="panel">
+        <h2>amane 出网代理</h2>
+        <p class="muted">把 amane 的 network.proxy 设为 http://127.0.0.1:7890（容器内 mihomo 混合端口）。</p>
+        <div class="row">
+          <button id="set-proxy" class="btn primary">一键设置 HTTP 代理</button>
+        </div>
+      </div>
+
       <div class="panel">
         <h2>订阅导入</h2>
         <form id="sub-form" class="row">

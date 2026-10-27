@@ -41,6 +41,7 @@ function updateLinks(links = {}) {
   const amane = links.amane || `${proto}//${host}:8000`;
   const dex = links.metacubexd || `${proto}//${host}:8080`;
   $('#link-amane-top').href = amane;
+  $('#link-amane').href = amane;
   $('#link-dex-top').href = dex;
   $('#link-dex').href = dex;
 }
@@ -112,35 +113,12 @@ function renderMihomoSummary(mihomo) {
     `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('');
 }
 
-async function loadToken() {
-  try {
-    const data = await api('/api/amane/token');
-    $('#amane-token').textContent = data.token || '未获取到（amane 可能尚未启动）';
-  } catch (err) {
-    $('#amane-token').textContent = '读取失败：' + err.message;
-  }
-}
-
-async function copyToken() {
-  const text = $('#amane-token').textContent.trim();
-  if (!text || text.startsWith('读取失败')) {
-    toast('没有可复制的 Token', true);
-    return;
-  }
-  try {
-    await navigator.clipboard.writeText(text);
-    toast('Token 已复制');
-  } catch {
-    toast('浏览器拒绝访问剪贴板，请手动选择复制', true);
-  }
-}
-
 async function setAmaneProxy() {
   const btn = $('#set-proxy');
   btn.disabled = true;
   try {
     const data = await api('/api/amane/proxy', { method: 'POST', body: '{}' });
-    toast('已设置 amane 代理：' + data.proxy);
+    toast('已设置 amane 出网代理：' + data.proxy);
   } catch (err) {
     toast('设置失败：' + err.message, true);
   } finally {
@@ -295,9 +273,7 @@ function setupTabs() {
 setupTabs();
 $('#refresh').addEventListener('click', () => {
   refreshStatus();
-  loadToken();
 });
-$('#copy-token').addEventListener('click', copyToken);
 $('#set-proxy').addEventListener('click', setAmaneProxy);
 $('#load-yaml').addEventListener('click', loadYaml);
 $('#save-yaml').addEventListener('click', saveYaml);
@@ -305,5 +281,4 @@ $('#load-proxies').addEventListener('click', loadProxies);
 $('#sub-form').addEventListener('submit', importSubscription);
 
 refreshStatus();
-loadToken();
 setInterval(refreshStatus, 10000);
