@@ -2,7 +2,6 @@
 set -eu
 
 : "${CLASH_SECRET:?CLASH_SECRET 未设置，请参考 .env.example}"
-: "${CONSOLE_PASSWORD:?CONSOLE_PASSWORD 未设置，请参考 .env.example}"
 
 mkdir -p /data/amane /data/mihomo
 

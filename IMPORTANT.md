@@ -15,7 +15,7 @@
 | 键 | 用途 | 必填 |
 |---|---|---|
 | `CLASH_SECRET` | mihomo API 密钥（console 与内核共用） | 是 |
-| `CONSOLE_USER` / `CONSOLE_PASSWORD` | 配置页 Basic Auth | 是 |
+| `CONSOLE_USER` / `CONSOLE_PASSWORD` | 配置页 Basic Auth；密码留空则首次免密进向导 | 否（留空即向导模式） |
 | `AMANE_TOKEN` | amane API Token（也可留空由程序生成） | 建议 |
 | `AMANE_SAFE_DIRS` | amane 允许访问的媒体目录 | 是 |
 | `SUB_USER_AGENT` | 订阅下载 UA（部分机场按 UA 放行） | 否 |
@@ -30,6 +30,8 @@
 - `/data/mihomo`：mihomo 工作目录，`-d` 指向这里
   - `config.yaml`：唯一配置，首页订阅写入此处，重启后仍生效
   - `blocked_nodes.json`：首页节点屏蔽名单
+  - `credentials.json`：配置页登录凭据（用户名 + PBKDF2 哈希 + 盐，权限 600）
+  - `onboarded.json`：首次向导完成标记，删除后刷新页面会重新弹向导
   - `geoip.dat` / `geoip.metadb` / `GeoSite.dat`：geo 数据
 - `/data/metacubexd`：已废弃，仅保留旧数据（迁移时从中复制一次）
 - `/media`：媒体目录（宿主机挂载，UID 1000 需可读写）

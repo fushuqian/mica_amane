@@ -7,6 +7,7 @@
 | Q-003 | 支持外网访问 metacubexd：默认 VPN/内网方案，可选 Caddy HTTPS 反代（`public` profile） | 可选功能已提供，未启用 | 中 | 2026-10-27 |
 | Q-004 | 首页改为三卡片（amane / mihomo / metacubexd），运行状态与基础设置合并进卡片；移除标签页；新增节点屏蔽 | 已完成（metacubexd 卡片后随 Q-005 移除） | 高 | 2026-10-28 |
 | Q-005 | 移除 metacubexd，由 supervisor 直接托管 mihomo，配置持久化到 `/data/mihomo/config.yaml`，释放 8080/9090 端口 | 已完成 | 高 | 2026-10-28 |
+| Q-006 | 首次登录配置向导：免密进入 → 环境自检 → 导入订阅 → 开启 amane 代理 → Token 与入口 → 设置管理员账号密码 | 已完成 | 高 | 2026-10-28 |
 
 ## 部署信息
 

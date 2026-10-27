@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import json
 import os
+import secrets
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
@@ -13,6 +18,10 @@ DATA_DIR = Path(os.environ.get("CONSOLE_DATA_DIR", "/data"))
 CONSOLE_DIR = DATA_DIR / "mihomo"
 MIHOMO_YAML = CONSOLE_DIR / "config.yaml"
 BLOCKED_JSON = CONSOLE_DIR / "blocked_nodes.json"
+CREDENTIALS_JSON = CONSOLE_DIR / "credentials.json"
+ONBOARDED_JSON = CONSOLE_DIR / "onboarded.json"
+
+PBKDF2_ITERATIONS = 200_000
 
 TEMPLATE = """\
 mixed-port: {mixed_port}
@@ -90,13 +99,88 @@ def load_blocked() -> list[str]:
 def save_blocked(names: list[str]) -> list[str]:
     ensure_dir()
     cleaned = sorted({str(name) for name in names if str(name)})
-    fd, tmp = tempfile.mkstemp(dir=CONSOLE_DIR, prefix=".blocked-", suffix=".json")
+    _write_json(BLOCKED_JSON, {"blocked": cleaned}, ".blocked-", 0o644)
+    return cleaned
+
+
+def _write_json(path: Path, payload: dict, prefix: str, mode: int) -> None:
+    ensure_dir()
+    fd, tmp = tempfile.mkstemp(dir=CONSOLE_DIR, prefix=prefix, suffix=".json")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            json.dump({"blocked": cleaned}, fh, ensure_ascii=False, indent=2)
-        os.chmod(tmp, 0o644)
-        os.replace(tmp, BLOCKED_JSON)
+            json.dump(payload, fh, ensure_ascii=False, indent=2)
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)
     finally:
         if os.path.exists(tmp):
             os.unlink(tmp)
-    return cleaned
+
+
+def load_credentials() -> dict | None:
+    try:
+        data = json.loads(CREDENTIALS_JSON.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    if not data.get("username") or not data.get("salt") or not data.get("hash"):
+        return None
+    return data
+
+
+def save_credentials(username: str, password: str) -> None:
+    """只保存 PBKDF2 哈希，不落明文密码。"""
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), salt, PBKDF2_ITERATIONS
+    )
+    _write_json(
+        CREDENTIALS_JSON,
+        {
+            "username": username,
+            "salt": base64.b64encode(salt).decode(),
+            "hash": base64.b64encode(digest).decode(),
+            "iterations": PBKDF2_ITERATIONS,
+        },
+        ".credentials-",
+        0o600,
+    )
+
+
+def verify_credentials(username: str, password: str) -> bool:
+    data = load_credentials()
+    if not data:
+        return False
+    try:
+        salt = base64.b64decode(data["salt"])
+        expected = base64.b64decode(data["hash"])
+        iterations = int(data.get("iterations") or PBKDF2_ITERATIONS)
+    except (ValueError, TypeError):
+        return False
+    if not hmac.compare_digest(str(data["username"]), username):
+        return False
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), salt, iterations
+    )
+    return hmac.compare_digest(digest, expected)
+
+
+def onboarding_done() -> bool:
+    try:
+        data = json.loads(ONBOARDED_JSON.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    return bool(isinstance(data, dict) and data.get("done"))
+
+
+def mark_onboarded(auth_source: str) -> None:
+    _write_json(
+        ONBOARDED_JSON,
+        {
+            "done": True,
+            "completed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "auth_source": auth_source,
+        },
+        ".onboarded-",
+        0o600,
+    )

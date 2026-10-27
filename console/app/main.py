@@ -19,30 +19,50 @@ STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 CONSOLE_USER = os.environ.get("CONSOLE_USER", "admin")
 CONSOLE_PASSWORD = os.environ.get("CONSOLE_PASSWORD", "")
 
+PUBLIC_PATHS = {"/healthz", "/api/setup/state"}
+
 app = FastAPI(title="Mica Amane Console", docs_url=None, redoc_url=None)
+
+
+def _auth_source() -> str:
+    """凭据优先级：向导写入的文件 > 环境变量 > 无（首次免密）。"""
+    if store.load_credentials():
+        return "file"
+    return "env" if CONSOLE_PASSWORD else "none"
 
 
 @app.middleware("http")
 async def basic_auth(request: Request, call_next):
-    if request.url.path == "/healthz" or not CONSOLE_PASSWORD:
+    if request.url.path in PUBLIC_PATHS:
+        return await call_next(request)
+
+    source = _auth_source()
+    if source == "none":
+        # 首次安装：允许免密进入，由向导引导设置管理员账号
         return await call_next(request)
 
     header = request.headers.get("authorization", "")
+    ok = False
     if header.startswith("Basic "):
         try:
             decoded = base64.b64decode(header[6:]).decode("utf-8")
             user, _, password = decoded.partition(":")
         except Exception:  # noqa: BLE001
             user, password = "", ""
-        if pysecrets.compare_digest(user, CONSOLE_USER) and pysecrets.compare_digest(
-            password, CONSOLE_PASSWORD
-        ):
-            return await call_next(request)
+        if source == "file":
+            ok = store.verify_credentials(user, password)
+        else:
+            ok = pysecrets.compare_digest(user, CONSOLE_USER) and pysecrets.compare_digest(
+                password, CONSOLE_PASSWORD
+            )
+
+    if ok:
+        return await call_next(request)
 
     return Response(
         status_code=401,
         content="需要登录",
-        headers={"WWW-Authenticate": 'Basic realm="amane-stack"'},
+        headers={"WWW-Authenticate": 'Basic realm="mica-amane"'},
     )
 
 
@@ -101,6 +121,58 @@ async def status():
         services["mihomo"] = mihomo
 
     return {"services": services, "links": _public_links()}
+
+
+@app.get("/api/setup/state")
+async def setup_state():
+    creds = store.load_credentials()
+    source = "file" if creds else ("env" if CONSOLE_PASSWORD else "none")
+    secret = os.environ.get("CLASH_SECRET", "")
+    username = None
+    if source == "file":
+        username = creds.get("username")
+    elif source == "env":
+        username = CONSOLE_USER
+    return {
+        "needs_onboarding": not store.onboarding_done(),
+        "auth_source": source,
+        "username": username,
+        "clash_secret_default": (not secret) or ("change-me" in secret),
+    }
+
+
+class CredentialsBody(BaseModel):
+    username: str
+    password: str
+
+
+@app.post("/api/setup/credentials")
+async def setup_credentials(body: CredentialsBody):
+    username = body.username.strip()
+    password = body.password
+    if len(username) < 2:
+        raise HTTPException(400, "用户名至少 2 个字符")
+    if len(password) < 8:
+        raise HTTPException(400, "密码至少 8 位")
+    if password == username:
+        raise HTTPException(400, "密码不能与用户名相同")
+    store.save_credentials(username, password)
+    # 设置密码后立即启用鉴权，当前浏览器需重新登录
+    store.mark_onboarded("file")
+    return {"ok": True, "auth_source": "file"}
+
+
+class CompleteBody(BaseModel):
+    set_credentials: bool = False
+
+
+@app.post("/api/setup/complete")
+async def setup_complete(body: CompleteBody | None = None):
+    source = _auth_source()
+    if source == "none":
+        raise HTTPException(400, "请先设置管理员账号密码")
+    store.mark_onboarded(source)
+    return {"ok": True, "auth_source": source}
 
 
 @app.get("/api/amane/token")

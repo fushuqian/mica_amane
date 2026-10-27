@@ -2,6 +2,12 @@
 
 ## 2026-10-28
 
+- 新增首次登录配置向导：环境自检 → 导入订阅 → amane 出网代理 → Token 与入口 → 设置管理员账号；完成后写 `/data/mihomo/onboarded.json`，顶栏「设置向导」可重开。
+- 首次免密：`CONSOLE_PASSWORD` 留空时全站免鉴权，仅用于进入向导；向导设置密码后立即启用 Basic Auth。
+- 登录凭据支持文件存储：`/data/mihomo/credentials.json` 只存 PBKDF2-SHA256 哈希（20 万次迭代、随机盐、权限 600），优先于环境变量密码。
+- 新增接口：`GET /api/setup/state`（免鉴权）、`POST /api/setup/credentials`、`POST /api/setup/complete`。
+- `entrypoint.sh` 不再强制要求 `CONSOLE_PASSWORD`；`.env.example` 改为可留空。
+- 验证：全新安装免密进入 → 设置账号 → 旧会话 401、新凭据 200、重启后保持；已有环境密码的部署可「沿用当前密码完成」。
 - **移除 metacubexd**：supervisor 直接托管 `mihomo -d /data/mihomo -f /data/mihomo/config.yaml`；Dockerfile 不再拉取 Node 与 `/opt/mcx-app`，镜像变小。
 - 配置持久化：首页订阅直接写入 `/data/mihomo/config.yaml`，容器重启后仍生效（已实测：导入测试订阅→重启→节点保留）。
 - 首次启动自动从旧的 `/data/metacubexd` 迁移配置、屏蔽名单与 geo 数据，旧目录保留未删。

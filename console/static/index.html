@@ -15,6 +15,7 @@
     </div>
     <div class="top-actions">
       <a id="link-amane-top" class="btn ghost" target="_blank" rel="noopener">amane</a>
+      <button id="open-wizard" class="btn ghost">设置向导</button>
       <button id="refresh" class="btn">刷新</button>
     </div>
   </header>
@@ -87,6 +88,22 @@
   </main>
 
   <div id="toast"></div>
+
+  <div id="wizard" class="wizard" hidden>
+    <div class="wizard-card">
+      <header class="wizard-head">
+        <span id="wizard-step">1 / 6</span>
+        <button id="wizard-close" class="wizard-close" type="button" aria-label="关闭">×</button>
+      </header>
+      <div id="wizard-body"></div>
+      <footer class="wizard-foot">
+        <button id="wizard-prev" class="btn" type="button">上一步</button>
+        <button id="wizard-next" class="btn primary" type="button">下一步</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="/static/onboarding.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>
