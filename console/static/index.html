@@ -22,66 +22,80 @@
 
   <main>
     <div class="service-grid">
-      <section class="service-card">
+      <section class="service-card" data-key="amane">
         <div class="svc-head">
-          <h2>amane</h2>
-          <span class="dot" id="dot-amane"></span>
-        </div>
-        <p class="svc-meta"><span id="state-amane">检测中…</span> · 端口 8000</p>
-
-        <div class="svc-section">
-          <div class="svc-label">
-            <span>出网代理</span>
-            <button id="proxy-switch" class="switch" role="switch" aria-checked="false"
-                    aria-label="amane 出网代理"><span></span></button>
+          <div class="svc-name">
+            <span class="dot" id="dot-amane"></span>
+            <h2>amane</h2>
           </div>
-          <p class="svc-value" id="proxy-value">未知</p>
-          <p class="hint">开启后 amane 经容器内 mihomo 出网（http://127.0.0.1:7890）。</p>
+          <button class="svc-toggle" type="button" aria-expanded="true"
+                  aria-controls="body-amane" aria-label="展开或收起 amane">▾</button>
         </div>
 
-        <div class="svc-footer">
-          <a id="link-amane" class="btn primary" target="_blank" rel="noopener">进入 amane</a>
+        <div class="svc-body" id="body-amane">
+          <p class="svc-meta"><span id="state-amane">检测中…</span> · 端口 8000</p>
+
+          <div class="svc-section">
+            <div class="svc-label">
+              <span>出网代理</span>
+              <button id="proxy-switch" class="switch" role="switch" aria-checked="false"
+                      aria-label="amane 出网代理"><span></span></button>
+            </div>
+            <p class="svc-value" id="proxy-value">未知</p>
+            <p class="hint">开启后 amane 经容器内 mihomo 出网（http://127.0.0.1:7890）。</p>
+          </div>
+
+          <div class="svc-footer">
+            <a id="link-amane" class="btn primary" target="_blank" rel="noopener">进入 amane</a>
+          </div>
         </div>
       </section>
 
-      <section class="service-card">
+      <section class="service-card" data-key="mihomo">
         <div class="svc-head">
-          <h2>mihomo</h2>
-          <span class="dot" id="dot-mihomo"></span>
-        </div>
-        <p class="svc-meta"><span id="state-mihomo">检测中…</span></p>
-
-        <div class="svc-section">
-          <div class="svc-label"><span>模式</span></div>
-          <div class="segmented" id="mode-switch">
-            <button type="button" data-mode="rule">规则</button>
-            <button type="button" data-mode="global">全局</button>
-            <button type="button" data-mode="direct">直连</button>
+          <div class="svc-name">
+            <span class="dot" id="dot-mihomo"></span>
+            <h2>mihomo</h2>
           </div>
+          <button class="svc-toggle" type="button" aria-expanded="true"
+                  aria-controls="body-mihomo" aria-label="展开或收起 mihomo">▾</button>
         </div>
 
-        <div class="svc-section">
-          <div class="svc-label">
-            <span>当前节点</span>
-            <span class="svc-value" id="node-now">-</span>
-          </div>
-          <div class="row">
-            <select id="node-group"></select>
-            <button id="node-toggle" class="btn small" type="button">节点</button>
-            <button id="node-test" class="btn small" type="button">测速</button>
-          </div>
-          <div id="node-list" class="node-list" hidden></div>
-          <button id="blocked-toggle" class="blocked-toggle" type="button" hidden>已屏蔽 0</button>
-          <div id="blocked-list" class="node-list" hidden></div>
-        </div>
+        <div class="svc-body" id="body-mihomo">
+          <p class="svc-meta"><span id="state-mihomo">检测中…</span></p>
 
-        <div class="svc-section">
-          <div class="svc-label"><span>订阅</span></div>
-          <form id="sub-form" class="row">
-            <input id="sub-url" type="url" placeholder="https://example.com/sub?token=..." required>
-            <button class="btn primary" type="submit">导入</button>
-          </form>
-          <p class="hint">导入成功后写入配置并热加载，节点列表会自动更新；重启容器后依然生效。</p>
+          <div class="svc-section">
+            <div class="svc-label"><span>模式</span></div>
+            <div class="segmented" id="mode-switch">
+              <button type="button" data-mode="rule">规则</button>
+              <button type="button" data-mode="global">全局</button>
+              <button type="button" data-mode="direct">直连</button>
+            </div>
+          </div>
+
+          <div class="svc-section">
+            <div class="svc-label">
+              <span>当前节点</span>
+              <span class="svc-value" id="node-now">-</span>
+            </div>
+            <div class="row">
+              <select id="node-group"></select>
+              <button id="node-toggle" class="btn small" type="button">节点</button>
+              <button id="node-test" class="btn small" type="button">测速</button>
+            </div>
+            <div id="node-list" class="node-list" hidden></div>
+            <button id="blocked-toggle" class="blocked-toggle" type="button" hidden>已屏蔽 0</button>
+            <div id="blocked-list" class="node-list" hidden></div>
+          </div>
+
+          <div class="svc-section">
+            <div class="svc-label"><span>订阅</span></div>
+            <form id="sub-form" class="row">
+              <input id="sub-url" type="url" placeholder="https://example.com/sub?token=..." required>
+              <button class="btn primary" type="submit">导入</button>
+            </form>
+            <p class="hint">导入成功后写入配置并热加载，节点列表会自动更新；重启容器后依然生效。</p>
+          </div>
         </div>
       </section>
     </div>

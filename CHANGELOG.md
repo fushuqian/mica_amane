@@ -2,6 +2,7 @@
 
 ## 2026-10-28
 
+- 首页卡片改为垂直排列：amane 在上、mihomo 在下；两张卡片标题栏可点击折叠/展开，状态记忆在浏览器 localStorage。
 - Docker Hub 仓库说明已同步：短描述 + 完整 README（相对链接改为 GitHub 绝对地址）。
 - 新增 `README.md`：项目说明、端口/目录、三种部署方式（NAS Compose / 一键脚本 / 源码构建）、环境变量表、首次向导、升级与常见问题。
 - 镜像发布到 Docker Hub：`kenzong/mica-amane:latest`（linux/amd64，含 amane + mihomo + 配置页）。

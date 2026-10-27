@@ -371,6 +371,45 @@ async function importSubscription(event) {
   }
 }
 
+/* ---------------- 卡片折叠 ---------------- */
+
+const FOLD_KEY = 'mica-amane:folds';
+
+function loadFolds() {
+  try {
+    return JSON.parse(localStorage.getItem(FOLD_KEY) || '{}') || {};
+  } catch {
+    return {};
+  }
+}
+
+function applyCollapsed(card, collapsed) {
+  card.classList.toggle('collapsed', collapsed);
+  const btn = card.querySelector('.svc-toggle');
+  if (btn) btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+}
+
+function setupCardCollapse() {
+  const folds = loadFolds();
+  document.querySelectorAll('.service-card[data-key]').forEach((card) => {
+    const key = card.dataset.key;
+    applyCollapsed(card, Boolean(folds[key]));
+    const head = card.querySelector('.svc-head');
+    if (!head) return;
+    head.addEventListener('click', () => {
+      const next = !card.classList.contains('collapsed');
+      applyCollapsed(card, next);
+      const saved = loadFolds();
+      saved[key] = next;
+      try {
+        localStorage.setItem(FOLD_KEY, JSON.stringify(saved));
+      } catch {
+        /* 隐私模式下忽略 */
+      }
+    });
+  });
+}
+
 /* ---------------- 事件绑定 ---------------- */
 
 $('#refresh').addEventListener('click', () => {
@@ -407,6 +446,7 @@ $('#blocked-toggle').addEventListener('click', () => {
 $('#sub-form').addEventListener('submit', importSubscription);
 
 async function init() {
+  setupCardCollapse();
   await loadBlocked();
   await refreshStatus();
   try {

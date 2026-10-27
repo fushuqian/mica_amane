@@ -63,29 +63,48 @@ body {
 .btn.small { padding: 4px 10px; font-size: 12px; }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-main { padding: 20px 24px 60px; max-width: 1400px; margin: 0 auto; }
+main { padding: 20px 24px 60px; max-width: 900px; margin: 0 auto; }
 
 /* ---------------- 卡片 ---------------- */
 
 .service-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 14px;
   align-items: start;
 }
 
 .service-card {
-  display: flex;
-  flex-direction: column;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px;
+  overflow: hidden;
 }
 
-.svc-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.svc-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+}
+.svc-head:hover { background: rgba(255, 255, 255, .02); }
+.svc-name { display: flex; align-items: center; gap: 9px; }
 .svc-head h2 { margin: 0; font-size: 16px; letter-spacing: .3px; }
-.svc-meta { margin: 4px 0 0; font-size: 12.5px; color: var(--muted); word-break: break-all; }
+
+.svc-toggle {
+  background: none; border: none;
+  padding: 2px 6px;
+  color: var(--muted); font-size: 12px; line-height: 1;
+  cursor: pointer;
+  transition: transform .18s ease;
+}
+.svc-toggle:hover { color: var(--text); }
+
+.svc-body { padding: 0 18px 18px; }
+.service-card.collapsed .svc-body { display: none; }
+.service-card.collapsed .svc-toggle { transform: rotate(-90deg); }
+
+.svc-meta { margin: 0 0 2px; font-size: 12.5px; color: var(--muted); word-break: break-all; }
 
 .svc-section {
   margin-top: 16px;
@@ -365,10 +384,6 @@ input[type="url"]:focus, select:focus { outline: 2px solid rgba(45, 212, 191, .3
   box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
 }
 .toast.error { border-left-color: var(--danger); }
-
-@media (max-width: 900px) {
-  .service-grid { grid-template-columns: 1fr; }
-}
 
 @media (max-width: 640px) {
   .topbar { padding: 14px 16px; }
