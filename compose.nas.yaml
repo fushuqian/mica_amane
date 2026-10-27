@@ -1,0 +1,33 @@
+# NAS（飞牛 fnOS / 群晖 / 威联通）图形界面用 Compose
+#
+# 使用前提：把仓库代码解压到本文件所在目录，`build: .` 才找得到 Dockerfile。
+# 粘贴前必须修改：
+#   1. CLASH_SECRET 换成随机长串（可用 openssl rand -hex 32 生成）
+#   2. /vol1/1000/media 换成 NAS 上真实的媒体目录
+#   3. 端口 8088 / 9000 若被占用，改成空闲端口
+services:
+  stack:
+    build: .
+    image: amane-stack:latest
+    container_name: amane-stack
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      CLASH_SECRET: "请替换为随机长串"
+      CONSOLE_USER: admin
+      # 留空：首次打开配置页走免密向导，由向导设置账号密码
+      CONSOLE_PASSWORD: ""
+      AMANE_SAFE_DIRS: /media
+      SUB_USER_AGENT: "mihomo.party/v2.0.4 (clash.meta)"
+    ports:
+      - "8088:8088"   # 配置页
+      - "9000:8000"   # amane（换成 NAS 上空闲端口）
+    volumes:
+      - ./data:/data
+      - /vol1/1000/media:/media
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8088/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s

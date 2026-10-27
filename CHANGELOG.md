@@ -2,6 +2,7 @@
 
 ## 2026-10-28
 
+- 新增 `compose.nas.yaml`：NAS 图形界面（飞牛 fnOS / 群晖 / 威联通）可直接粘贴的 Compose，环境变量内嵌、端口与媒体路径可在界面里改。
 - 新增 `deploy.sh` 一键部署：自动生成 `.env` 与随机 `CLASH_SECRET`、创建数据/媒体目录、端口占用检查、可选构建代理、启动并等待健康；支持 `--amane-port` / `--panel-port` / `--media-dir` / `--proxy` / `--no-build`。
 - compose 端口改为可配置：`${AMANE_PORT:-8000}`、`${PANEL_PORT:-8088}`；`.env.example` 增加对应变量。
 - 验证：脚本在 Git Bash 下以 `--no-build` 实跑通过，健康检查走 `/healthz`。
