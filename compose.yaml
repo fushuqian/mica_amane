@@ -6,8 +6,8 @@ services:
     restart: unless-stopped
     env_file: .env
     ports:
-      - "${BIND_ADDR:-0.0.0.0}:8000:8000"   # amane Web/API
-      - "${BIND_ADDR:-0.0.0.0}:8088:8088"   # 配置页
+      - "${BIND_ADDR:-0.0.0.0}:${AMANE_PORT:-8000}:8000"   # amane Web/API
+      - "${BIND_ADDR:-0.0.0.0}:${PANEL_PORT:-8088}:8088"  # 配置页
       # 7890 混合代理与 9090 Clash API 只在容器内使用，不映射
     volumes:
       - ./data:/data

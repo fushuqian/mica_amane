@@ -2,6 +2,9 @@
 
 ## 2026-10-28
 
+- 新增 `deploy.sh` 一键部署：自动生成 `.env` 与随机 `CLASH_SECRET`、创建数据/媒体目录、端口占用检查、可选构建代理、启动并等待健康；支持 `--amane-port` / `--panel-port` / `--media-dir` / `--proxy` / `--no-build`。
+- compose 端口改为可配置：`${AMANE_PORT:-8000}`、`${PANEL_PORT:-8088}`；`.env.example` 增加对应变量。
+- 验证：脚本在 Git Bash 下以 `--no-build` 实跑通过，健康检查走 `/healthz`。
 - 新增首次登录配置向导：环境自检 → 导入订阅 → amane 出网代理 → Token 与入口 → 设置管理员账号；完成后写 `/data/mihomo/onboarded.json`，顶栏「设置向导」可重开。
 - 首次免密：`CONSOLE_PASSWORD` 留空时全站免鉴权，仅用于进入向导；向导设置密码后立即启用 Basic Auth。
 - 登录凭据支持文件存储：`/data/mihomo/credentials.json` 只存 PBKDF2-SHA256 哈希（20 万次迭代、随机盐、权限 600），优先于环境变量密码。
