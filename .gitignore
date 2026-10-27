@@ -1,0 +1,7 @@
+.env
+data/
+media/
+__pycache__/
+*.pyc
+.venv/
+.trae/toolcall-output/

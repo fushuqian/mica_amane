@@ -1,0 +1,10 @@
+data
+media
+.env
+.git
+.gitignore
+.trae
+toberemoved
+__pycache__
+*.pyc
+.venv

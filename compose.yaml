@@ -1,0 +1,48 @@
+services:
+  stack:
+    build: .
+    image: amane-stack:latest
+    container_name: amane-stack
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${BIND_ADDR:-0.0.0.0}:8000:8000"   # amane Web/API
+      - "${BIND_ADDR:-0.0.0.0}:8080:8080"   # metacubexd 面板/agent
+      - "${BIND_ADDR:-0.0.0.0}:8088:8088"   # 配置页
+      - "${BIND_ADDR:-0.0.0.0}:9090:9090"   # mihomo Clash API（浏览器直连，含 WS）
+      # 7890 故意不映射：仅供容器内 127.0.0.1 使用
+    volumes:
+      - ./data:/data
+      - "${MEDIA_DIR:-./media}:/media"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8088/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  # 可选：公网 HTTPS 反代。启用：
+  #   docker compose --profile public up -d
+  # 同时把 .env 里的 BIND_ADDR 改为 127.0.0.1，让 8000/8080/8088/9090 只回环可达。
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["public"]
+    restart: unless-stopped
+    depends_on:
+      stack:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      BASE_DOMAIN: ${BASE_DOMAIN}
+      PANEL_USER: ${PANEL_USER}
+      PANEL_PASSWORD_HASH: ${PANEL_PASSWORD_HASH}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data: {}
+  caddy_config: {}
