@@ -8,7 +8,6 @@ import httpx
 
 AMANE_URL = os.environ.get("CONSOLE_AMANE_URL", "http://127.0.0.1:8000").rstrip("/")
 MIHOMO_URL = os.environ.get("CONSOLE_MIHOMO_URL", "http://127.0.0.1:9090").rstrip("/")
-METACUBEXD_URL = os.environ.get("CONSOLE_METACUBEXD_URL", "http://127.0.0.1:8080").rstrip("/")
 CLASH_SECRET = os.environ.get("CLASH_SECRET", "")
 DATA_DIR = Path(os.environ.get("CONSOLE_DATA_DIR", "/data"))
 
@@ -55,6 +54,11 @@ async def get_clash(path: str, timeout: float = 5.0) -> httpx.Response:
 async def put_clash(path: str, payload: dict, timeout: float = 10.0) -> httpx.Response:
     async with httpx.AsyncClient(timeout=timeout) as client:
         return await client.put(f"{MIHOMO_URL}{path}", json=payload, headers=clash_headers())
+
+
+async def patch_clash(path: str, payload: dict, timeout: float = 10.0) -> httpx.Response:
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        return await client.patch(f"{MIHOMO_URL}{path}", json=payload, headers=clash_headers())
 
 
 async def apply_config_file(path: str, timeout: float = 30.0) -> httpx.Response:

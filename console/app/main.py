@@ -19,7 +19,7 @@ STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 CONSOLE_USER = os.environ.get("CONSOLE_USER", "admin")
 CONSOLE_PASSWORD = os.environ.get("CONSOLE_PASSWORD", "")
 
-app = FastAPI(title="Amane Stack Console", docs_url=None, redoc_url=None)
+app = FastAPI(title="Mica Amane Console", docs_url=None, redoc_url=None)
 
 
 @app.middleware("http")
@@ -67,10 +67,7 @@ def _json(resp: httpx.Response):
 
 
 def _public_links() -> dict[str, str]:
-    return {
-        "amane": os.environ.get("PUBLIC_AMANE_URL", ""),
-        "metacubexd": os.environ.get("PUBLIC_METACUBEXD_URL", ""),
-    }
+    return {"amane": os.environ.get("PUBLIC_AMANE_URL", "")}
 
 
 @app.get("/api/status")
@@ -82,12 +79,6 @@ async def status():
             services["amane"] = {"online": resp.status_code == 200, "detail": _json(resp)}
         except Exception as exc:  # noqa: BLE001
             services["amane"] = {"online": False, "detail": str(exc)}
-
-        try:
-            resp = await client.get(f"{c.METACUBEXD_URL}/api/control/health")
-            services["metacubexd"] = {"online": resp.status_code == 200, "detail": _json(resp)}
-        except Exception as exc:  # noqa: BLE001
-            services["metacubexd"] = {"online": False, "detail": str(exc)}
 
         mihomo: dict = {"online": False}
         try:
@@ -118,15 +109,41 @@ async def amane_token():
     return {"token": token, "source": "env" if os.environ.get("AMANE_TOKEN") else "file"}
 
 
+@app.get("/api/amane/config")
+async def amane_config():
+    """读取 amane 配置，用于首页判断出网代理是否已开启。"""
+    try:
+        resp = await c.get_amane("/api/config")
+    except httpx.HTTPError:
+        return {"available": False, "proxy": None}
+    if resp.status_code >= 400:
+        return {"available": False, "proxy": None}
+    data = _json(resp)
+    network = data.get("network") if isinstance(data, dict) else None
+    proxy = network.get("proxy") if isinstance(network, dict) else None
+    return {"available": True, "proxy": proxy}
+
+
 class ProxyBody(BaseModel):
     url: str | None = None
+    enabled: bool | None = None
 
 
 @app.post("/api/amane/proxy")
 async def set_amane_proxy(body: ProxyBody):
-    target = (body.url or c.PROXY_URL).strip()
+    if body.enabled is False:
+        target = None
+    else:
+        target = (body.url or c.PROXY_URL).strip()
+        if not target:
+            target = c.PROXY_URL
+
     try:
         resp = await c.patch_amane("/api/config", {"network": {"proxy": target}})
+        if target is None and resp.status_code >= 400:
+            # 部分版本不接受 null，退回空字符串表示不启用代理
+            target = ""
+            resp = await c.patch_amane("/api/config", {"network": {"proxy": target}})
     except httpx.HTTPError as exc:
         raise HTTPException(502, f"无法连接 amane：{exc}") from exc
     if resp.status_code >= 400:
@@ -143,6 +160,47 @@ async def mihomo_config():
     if resp.status_code >= 400:
         raise HTTPException(resp.status_code, _json(resp))
     return _json(resp)
+
+
+class ModeBody(BaseModel):
+    mode: str
+
+
+@app.post("/api/mihomo/mode")
+async def mihomo_mode(body: ModeBody):
+    mode = body.mode.strip().lower()
+    if mode not in {"rule", "global", "direct"}:
+        raise HTTPException(400, "mode 只能是 rule / global / direct")
+    try:
+        resp = await c.patch_clash("/configs", {"mode": mode})
+    except httpx.HTTPError as exc:
+        raise HTTPException(502, f"无法连接 mihomo：{exc}") from exc
+    if resp.status_code >= 400:
+        raise HTTPException(resp.status_code, _json(resp))
+    return {"ok": True, "mode": mode}
+
+
+@app.get("/api/mihomo/blocked")
+async def mihomo_blocked():
+    return {"blocked": store.load_blocked()}
+
+
+class BlockedBody(BaseModel):
+    name: str
+    blocked: bool = True
+
+
+@app.post("/api/mihomo/blocked")
+async def mihomo_set_blocked(body: BlockedBody):
+    name = body.name.strip()
+    if not name:
+        raise HTTPException(400, "name 不能为空")
+    names = store.load_blocked()
+    if body.blocked:
+        names.append(name)
+    else:
+        names = [item for item in names if item != name]
+    return {"blocked": store.save_blocked(names)}
 
 
 @app.get("/api/mihomo/proxies")

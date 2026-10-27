@@ -1,17 +1,5 @@
 # 公网 HTTPS 反代（可选，public profile）
-# 同域名路径代理，保持同源，规避 CORS；Caddy 自动处理 WebSocket。
-# dex.* 下：
-#   /            -> metacubexd 面板 (8080)
-#   /clash/*     -> mihomo Clash API (9090)，剥离 /clash 前缀
-dex.{$BASE_DOMAIN} {
-	basic_auth {
-		{$PANEL_USER} {$PANEL_PASSWORD_HASH}
-	}
-	handle_path /clash/* {
-		reverse_proxy stack:9090
-	}
-	reverse_proxy stack:8080
-}
+# amane 与配置页各占一个子域；配置页自身有 Basic Auth。
 
 amane.{$BASE_DOMAIN} {
 	basic_auth {

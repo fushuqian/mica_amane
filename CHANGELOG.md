@@ -1,5 +1,20 @@
 # 变更记录
 
+## 2026-10-28
+
+- **移除 metacubexd**：supervisor 直接托管 `mihomo -d /data/mihomo -f /data/mihomo/config.yaml`；Dockerfile 不再拉取 Node 与 `/opt/mcx-app`，镜像变小。
+- 配置持久化：首页订阅直接写入 `/data/mihomo/config.yaml`，容器重启后仍生效（已实测：导入测试订阅→重启→节点保留）。
+- 首次启动自动从旧的 `/data/metacubexd` 迁移配置、屏蔽名单与 geo 数据，旧目录保留未删。
+- 端口收敛：不再映射 `8080`、`9090`，宿主只开 `8000`、`8088`。
+- 首页去掉 metacubexd 卡片，改为 amane / mihomo 双卡片；`/api/status` 不再探测 metacubexd。
+- `.env.example` 删除 `CONTROL_TOKEN`、`DEFAULT_BACKEND_URL`、`PUBLIC_METACUBEXD_URL`；Caddyfile 删除 `dex.*` 段。
+- 配置页首页改版：去掉「总览 / Mihomo / 关于」标签页，改为卡片式布局，运行状态与基础设置同卡片展示。
+- amane 卡片：出网代理改为开关，显示当前 proxy 值；后端 `POST /api/amane/proxy` 支持 `enabled` 开关，新增 `GET /api/amane/config` 读取当前值。
+- mihomo 卡片：新增模式切换（rule/global/direct，`POST /api/mihomo/mode`）、当前节点选择与测速、订阅导入。
+- 新增节点屏蔽：`GET/POST /api/mihomo/blocked`，名单存 `/data/mihomo/blocked_nodes.json`，被屏蔽节点从首页候选列表隐藏。
+- 移除首页 YAML 编辑器与「关于」页。
+- 验证：三服务状态、amane 代理读写、模式切换、屏蔽/恢复、订阅导入与重启持久化均通过。
+
 ## 2026-10-27
 
 - 初始化项目结构：单容器整合 amane / mihomo / metacubexd。

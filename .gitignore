@@ -1,6 +1,7 @@
 .env
 data/
 media/
+toberemoved/
 __pycache__/
 *.pyc
 .venv/

@@ -3,116 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Amane Stack</title>
+  <title>Mica Amane</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="dot" id="global-dot"></span>
-      <h1>Amane Stack</h1>
-      <span class="sub">amane · mihomo · metacubexd</span>
+      <h1>Mica Amane</h1>
+      <span class="sub">amane · mihomo</span>
     </div>
     <div class="top-actions">
       <a id="link-amane-top" class="btn ghost" target="_blank" rel="noopener">amane</a>
-      <a id="link-dex-top" class="btn ghost" target="_blank" rel="noopener">metacubexd</a>
       <button id="refresh" class="btn">刷新</button>
     </div>
   </header>
 
-  <nav class="tabs">
-    <button class="tab active" data-tab="overview">总览</button>
-    <button class="tab" data-tab="mihomo">Mihomo</button>
-    <button class="tab" data-tab="about">关于</button>
-  </nav>
-
   <main>
-    <section id="tab-overview" class="tab-panel active">
-      <div class="cards" id="cards"></div>
-      <div class="grid">
-        <div class="panel">
+    <div class="service-grid">
+      <section class="service-card">
+        <div class="svc-head">
           <h2>amane</h2>
-          <p class="muted">影库刮削服务，端口 8000。</p>
+          <span class="dot" id="dot-amane"></span>
+        </div>
+        <p class="svc-meta"><span id="state-amane">检测中…</span> · 端口 8000</p>
+
+        <div class="svc-section">
+          <div class="svc-label">
+            <span>出网代理</span>
+            <button id="proxy-switch" class="switch" role="switch" aria-checked="false"
+                    aria-label="amane 出网代理"><span></span></button>
+          </div>
+          <p class="svc-value" id="proxy-value">未知</p>
+          <p class="hint">开启后 amane 经容器内 mihomo 出网（http://127.0.0.1:7890）。</p>
+        </div>
+
+        <div class="svc-footer">
           <a id="link-amane" class="btn primary" target="_blank" rel="noopener">进入 amane</a>
         </div>
-        <div class="panel">
+      </section>
+
+      <section class="service-card">
+        <div class="svc-head">
           <h2>mihomo</h2>
-          <p class="muted">代理内核；metacubexd 面板需要直连 9090。</p>
-          <dl id="mihomo-summary" class="kv"></dl>
-          <a id="link-dex" class="btn primary" target="_blank" rel="noopener">打开 metacubexd 面板</a>
+          <span class="dot" id="dot-mihomo"></span>
         </div>
-      </div>
-    </section>
+        <p class="svc-meta"><span id="state-mihomo">检测中…</span></p>
 
-    <section id="tab-mihomo" class="tab-panel">
-      <div class="panel">
-        <h2>amane 出网代理</h2>
-        <p class="muted">把 amane 的 network.proxy 设为 http://127.0.0.1:7890（容器内 mihomo 混合端口）。</p>
-        <div class="row">
-          <button id="set-proxy" class="btn primary">一键设置 HTTP 代理</button>
+        <div class="svc-section">
+          <div class="svc-label"><span>模式</span></div>
+          <div class="segmented" id="mode-switch">
+            <button type="button" data-mode="rule">规则</button>
+            <button type="button" data-mode="global">全局</button>
+            <button type="button" data-mode="direct">直连</button>
+          </div>
         </div>
-      </div>
 
-      <div class="panel">
-        <h2>订阅导入</h2>
-        <form id="sub-form" class="row">
-          <input id="sub-url" type="url" placeholder="https://example.com/sub?token=..." required>
-          <button class="btn primary" type="submit">下载并热加载</button>
-        </form>
-        <p class="hint">服务端先尝试经容器内 7890 下载，失败后回退直连；成功后写入 /data/metacubexd/console/mihomo.yaml 并热加载。</p>
-      </div>
+        <div class="svc-section">
+          <div class="svc-label">
+            <span>当前节点</span>
+            <span class="svc-value" id="node-now">-</span>
+          </div>
+          <div class="row">
+            <select id="node-group"></select>
+            <button id="node-toggle" class="btn small" type="button">节点</button>
+            <button id="node-test" class="btn small" type="button">测速</button>
+          </div>
+          <div id="node-list" class="node-list" hidden></div>
+          <button id="blocked-toggle" class="blocked-toggle" type="button" hidden>已屏蔽 0</button>
+          <div id="blocked-list" class="node-list" hidden></div>
+        </div>
 
-      <div class="panel">
-        <div class="panel-head">
-          <h2>配置 YAML</h2>
-          <span id="yaml-path" class="muted"></span>
+        <div class="svc-section">
+          <div class="svc-label"><span>订阅</span></div>
+          <form id="sub-form" class="row">
+            <input id="sub-url" type="url" placeholder="https://example.com/sub?token=..." required>
+            <button class="btn primary" type="submit">导入</button>
+          </form>
+          <p class="hint">导入成功后写入配置并热加载，节点列表会自动更新；重启容器后依然生效。</p>
         </div>
-        <textarea id="yaml-editor" spellcheck="false" placeholder="加载中…"></textarea>
-        <div class="row">
-          <button id="load-yaml" class="btn">重新读取</button>
-          <button id="save-yaml" class="btn primary">保存并热加载</button>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <h2>代理组</h2>
-          <button id="load-proxies" class="btn small">刷新</button>
-        </div>
-        <div id="proxy-groups" class="groups"><p class="muted">加载中…</p></div>
-      </div>
-    </section>
-
-    <section id="tab-about" class="tab-panel">
-      <div class="panel">
-        <h2>端口</h2>
-        <table>
-          <tr><th>端口</th><th>服务</th><th>说明</th></tr>
-          <tr><td>8000</td><td>amane</td><td>影库 Web/API</td></tr>
-          <tr><td>8080</td><td>metacubexd</td><td>面板 + agent</td></tr>
-          <tr><td>8088</td><td>配置页</td><td>当前页面</td></tr>
-          <tr><td>9090</td><td>mihomo</td><td>Clash API（面板直连，含 WS）</td></tr>
-          <tr><td>7890</td><td>mihomo</td><td>mixed 代理，仅容器内使用</td></tr>
-        </table>
-      </div>
-      <div class="panel">
-        <h2>路径</h2>
-        <dl class="kv">
-          <dt>/data/amane</dt><dd>amane 数据、token、resources、plugins</dd>
-          <dt>/data/metacubexd</dt><dd>profiles、active.yaml、缓存</dd>
-          <dt>/data/metacubexd/console</dt><dd>配置页订阅 YAML</dd>
-          <dt>/media</dt><dd>媒体目录（宿主挂载）</dd>
-        </dl>
-      </div>
-      <div class="panel">
-        <h2>上游项目</h2>
-        <div class="row">
-          <a class="btn" href="https://github.com/sqzw-x/amane" target="_blank" rel="noopener">amane</a>
-          <a class="btn" href="https://github.com/MetaCubeX/mihomo" target="_blank" rel="noopener">mihomo</a>
-          <a class="btn" href="https://github.com/MetaCubeX/metacubexd" target="_blank" rel="noopener">metacubexd</a>
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>
 
   <div id="toast"></div>

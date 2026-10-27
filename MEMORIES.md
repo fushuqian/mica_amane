@@ -12,3 +12,5 @@
 - 部分机场按 User-Agent 放行：默认 UA 与 `clash-verge` 会被拦截/掐断，本机机场要求 `mihomo.party/v2.0.4 (clash.meta)`；已做成 `SUB_USER_AGENT` 环境变量。
 - 订阅服务器可能“慢速滴流 + 不关闭连接”：30 秒只传 12–20KB，httpx 直接超时。后续需改为流式读取并在超时后使用已收到内容。
 - mihomo 的 `geoip.metadb` / `GeoSite.dat` 自动下载可能被截断，导致内核启动报 `MMDB invalid` / `GeoSite.dat invalid`。用 jsdelivr 的 `meta-rules-dat@release` 手动替换 `/data/metacubexd/` 下文件即可恢复。
+- `docker compose exec ... sh -c 'curl -H "Authorization: Bearer $CLASH_SECRET" ...'` 会因 secret 在 shell 里展开异常返回 401；从宿主用 PowerShell 读取 `.env` 后直接调 `http://127.0.0.1:9090` 认证正常。
+- mihomo 可以完全脱离 metacubexd 独立运行：`mihomo -d <home> -f <config>` 即可；`PUT /configs` 的路径白名单以 `-d` 指定的 home 为准。因此把配置放 `/data/mihomo/config.yaml`，首页订阅写入后重启依然生效（metacubexd 的 agent 才会在重启时用自己的 active.yaml 覆盖）。

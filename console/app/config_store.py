@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -7,10 +8,11 @@ from pathlib import Path
 import yaml
 
 DATA_DIR = Path(os.environ.get("CONSOLE_DATA_DIR", "/data"))
-# metacubexd 会以 mihomo 的 DATA_DIR（/data/metacubexd）作为 home，
-# 只有该目录下的路径才允许 PUT /configs 热加载，因此配置放在其子目录。
-CONSOLE_DIR = DATA_DIR / "metacubexd" / "console"
-MIHOMO_YAML = CONSOLE_DIR / "mihomo.yaml"
+# mihomo 以 /data/mihomo 为工作目录（-d），配置必须放在该目录下，
+# 这样 PUT /configs 的路径白名单才允许热加载。
+CONSOLE_DIR = DATA_DIR / "mihomo"
+MIHOMO_YAML = CONSOLE_DIR / "config.yaml"
+BLOCKED_JSON = CONSOLE_DIR / "blocked_nodes.json"
 
 TEMPLATE = """\
 mixed-port: {mixed_port}
@@ -71,3 +73,30 @@ def load() -> str | None:
 
 def template(secret: str, mixed_port: int = 7890, api_port: int = 9090) -> str:
     return TEMPLATE.format(secret=secret, mixed_port=mixed_port, api_port=api_port)
+
+
+def load_blocked() -> list[str]:
+    """配置页级的节点屏蔽名单；文件缺失或损坏时视为空。"""
+    try:
+        data = json.loads(BLOCKED_JSON.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    items = data.get("blocked") if isinstance(data, dict) else None
+    if not isinstance(items, list):
+        return []
+    return [str(name) for name in items if str(name)]
+
+
+def save_blocked(names: list[str]) -> list[str]:
+    ensure_dir()
+    cleaned = sorted({str(name) for name in names if str(name)})
+    fd, tmp = tempfile.mkstemp(dir=CONSOLE_DIR, prefix=".blocked-", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump({"blocked": cleaned}, fh, ensure_ascii=False, indent=2)
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, BLOCKED_JSON)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+    return cleaned
