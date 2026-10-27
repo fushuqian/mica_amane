@@ -2,6 +2,7 @@
 
 ## 2026-10-28
 
+- 新增 `README.md`：项目说明、端口/目录、三种部署方式（NAS Compose / 一键脚本 / 源码构建）、环境变量表、首次向导、升级与常见问题。
 - 镜像发布到 Docker Hub：`kenzong/mica-amane:latest`（linux/amd64，含 amane + mihomo + 配置页）。
 - 新增 `compose.pull.yaml`：NAS 纯镜像版，不需要代码与构建，粘贴即可启动。
 - 新增 `compose.nas.yaml`：NAS 图形界面（飞牛 fnOS / 群晖 / 威联通）可直接粘贴的 Compose，环境变量内嵌、端口与媒体路径可在界面里改。
