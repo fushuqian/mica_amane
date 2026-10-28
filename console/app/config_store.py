@@ -21,6 +21,7 @@ BLOCKED_JSON = CONSOLE_DIR / "blocked_nodes.json"
 CREDENTIALS_JSON = CONSOLE_DIR / "credentials.json"
 ONBOARDED_JSON = CONSOLE_DIR / "onboarded.json"
 SERVICE_JSON = CONSOLE_DIR / "service.json"
+SETTINGS_JSON = CONSOLE_DIR / "settings.json"
 
 PBKDF2_ITERATIONS = 200_000
 
@@ -130,6 +131,22 @@ def _write_json(path: Path, payload: dict, prefix: str, mode: int) -> None:
     finally:
         if os.path.exists(tmp):
             os.unlink(tmp)
+
+
+def load_settings() -> dict:
+    """配置页自身的设置；文件缺失或损坏时视为空。"""
+    try:
+        data = json.loads(SETTINGS_JSON.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def save_settings(updates: dict) -> dict:
+    data = load_settings()
+    data.update({k: v for k, v in updates.items() if v is not None})
+    _write_json(SETTINGS_JSON, data, ".settings-", 0o644)
+    return data
 
 
 def load_credentials() -> dict | None:

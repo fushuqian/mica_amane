@@ -35,6 +35,12 @@
         <div class="svc-body" id="body-amane">
           <p class="svc-meta"><span id="state-amane">检测中…</span> · 端口 <span id="port-amane">8000</span></p>
 
+          <div class="port-row">
+            <input id="amane-port-input" type="number" min="1" max="65535" placeholder="对外端口" aria-label="amane 对外端口">
+            <button id="amane-port-save" class="btn small" type="button">保存端口</button>
+          </div>
+          <p class="hint">宿主端口与容器 8000 不一致时填这里（如 16509），「进入 amane」会跳到该端口。</p>
+
           <div class="svc-section">
             <div class="svc-label">
               <span>出网代理</span>

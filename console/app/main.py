@@ -103,11 +103,26 @@ def _json(resp: httpx.Response):
 
 
 def _public_links() -> dict[str, str]:
-    # amane 的宿主端口由 compose 的 AMANE_PUBLIC_PORT 传入，前端据此拼跳转地址
+    # 端口优先级：配置页手动设置 > AMANE_PUBLIC_PORT（compose 传入）> 8000
+    stored = str(store.load_settings().get("amane_port") or "").strip()
+    port = stored or os.environ.get("AMANE_PUBLIC_PORT", "") or "8000"
     return {
         "amane": os.environ.get("PUBLIC_AMANE_URL", ""),
-        "amane_port": os.environ.get("AMANE_PUBLIC_PORT", "") or "8000",
+        "amane_port": port,
     }
+
+
+class AmanePortBody(BaseModel):
+    port: str = ""
+
+
+@app.post("/api/settings/amane_port")
+async def set_amane_port(body: AmanePortBody):
+    port = body.port.strip()
+    if port and (not port.isdigit() or not 1 <= int(port) <= 65535):
+        raise HTTPException(400, "端口需为 1-65535 的整数，留空则回退到环境变量")
+    store.save_settings({"amane_port": port})
+    return {"ok": True, "links": _public_links()}
 
 
 @app.get("/api/status")

@@ -61,6 +61,23 @@ function updateLinks(links = {}) {
   $('#link-amane').href = amane;
   const portLabel = $('#port-amane');
   if (portLabel) portLabel.textContent = port;
+  const portInput = $('#amane-port-input');
+  if (portInput && document.activeElement !== portInput) portInput.value = port;
+}
+
+async function saveAmanePort() {
+  const input = $('#amane-port-input');
+  if (!input) return;
+  try {
+    const data = await api('/api/settings/amane_port', {
+      method: 'POST',
+      body: JSON.stringify({ port: input.value.trim() }),
+    });
+    updateLinks(data.links || {});
+    toast('端口已保存');
+  } catch (err) {
+    toast(`保存失败：${err.message}`, true);
+  }
 }
 
 /* ---------------- 状态 ---------------- */
@@ -534,6 +551,7 @@ $('#proxy-switch').addEventListener('click', toggleAmaneProxy);
 $('#mihomo-switch').addEventListener('click', toggleMihomoService);
 $('#token-reveal').addEventListener('click', toggleToken);
 $('#token-copy').addEventListener('click', copyToken);
+$('#amane-port-save').addEventListener('click', saveAmanePort);
 $('#mode-switch').addEventListener('click', (event) => {
   const btn = event.target.closest('button[data-mode]');
   if (btn) setMode(btn.dataset.mode);
