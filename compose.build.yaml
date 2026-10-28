@@ -1,0 +1,6 @@
+# 源码构建覆盖（不拉 Docker Hub，本地从 Dockerfile 构建）：
+#   docker compose -f compose.yaml -f compose.build.yaml up -d --build
+services:
+  stack:
+    image: amane-stack:local
+    build: .

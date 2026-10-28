@@ -1,7 +1,6 @@
 services:
   stack:
-    build: .
-    image: amane-stack:latest
+    image: kenzong/mica-amane:latest
     container_name: amane-stack
     restart: unless-stopped
     env_file: .env

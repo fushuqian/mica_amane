@@ -65,16 +65,16 @@ chmod +x deploy.sh
 2. 生成 `.env`，把 `CLASH_SECRET` 替换为随机值
 3. 创建 `data/` 与媒体目录，处理 UID 1000 权限
 4. 检查 8000 / 8088 端口占用
-5. 构建镜像并启动
+5. 拉取镜像并启动
 6. 轮询 `/healthz`，就绪后打印访问地址
 
 可选参数：
 
 ```bash
-./deploy.sh --proxy http://127.0.0.1:7890   # 构建走代理
+./deploy.sh --proxy http://127.0.0.1:7890   # 给拉取/构建过程走代理
 ./deploy.sh --panel-port 9088 --amane-port 9000
 ./deploy.sh --media-dir /mnt/media
-./deploy.sh --no-build                       # 镜像已存在，跳过构建
+./deploy.sh --build                         # 本地源码构建，不拉镜像
 ```
 
 ---
@@ -85,7 +85,7 @@ chmod +x deploy.sh
 git clone https://github.com/fushuqian/mica_amane.git
 cd mica_amane
 cp .env.example .env        # 编辑 CLASH_SECRET 等
-docker compose up -d --build
+docker compose -f compose.yaml -f compose.build.yaml up -d --build
 ```
 
 NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)（环境变量内嵌，可直接粘贴）。

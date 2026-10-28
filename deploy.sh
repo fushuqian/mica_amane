@@ -6,7 +6,7 @@ PROXY=""
 AMANE_PORT=""
 PANEL_PORT=""
 MEDIA_DIR=""
-NO_BUILD=0
+BUILD=0
 
 usage() {
   cat <<'EOF'
@@ -20,7 +20,7 @@ Mica Amane 一键部署
   --amane-port PORT  amane 面板的宿主机端口（默认 8000）
   --panel-port PORT  配置页的宿主机端口（默认 8088）
   --media-dir PATH   宿主机媒体目录（默认 ./media）
-  --no-build         跳过构建，直接用已有的 amane-stack 镜像启动
+  --build            本地源码构建，不拉 Docker Hub 镜像
   -h, --help         显示帮助
 EOF
 }
@@ -31,7 +31,8 @@ while [ $# -gt 0 ]; do
     --amane-port) AMANE_PORT="${2:-}"; shift 2 ;;
     --panel-port) PANEL_PORT="${2:-}"; shift 2 ;;
     --media-dir) MEDIA_DIR="${2:-}"; shift 2 ;;
-    --no-build) NO_BUILD=1; shift ;;
+    --build) BUILD=1; shift ;;
+    --no-build) shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "未知参数：$1"; usage; exit 1 ;;
   esac
@@ -139,25 +140,30 @@ if [ -z "$running" ]; then
   fi
 fi
 
-# ---------- 构建 ----------
+# ---------- 拉取镜像 ----------
 
 if [ -n "$PROXY" ]; then
   export HTTP_PROXY="$PROXY" HTTPS_PROXY="$PROXY" ALL_PROXY="$PROXY"
   echo "构建代理：$PROXY"
-  echo "注意：Docker 拉取基础镜像走 daemon；若 FROM 拉取失败，请给 Docker daemon 配代理"
+  echo "注意：Docker 拉取镜像走 daemon；若 daemon 直连 Docker Hub 超时，请给 Docker daemon 配代理或镜像加速"
 fi
 
-if [ "$NO_BUILD" -eq 0 ]; then
-  echo "开始构建镜像（首次较慢）…"
+if [ "$BUILD" -eq 1 ]; then
+  echo "本地构建镜像（首次较慢）…"
   if [ -n "$PROXY" ]; then
-    $DC build --build-arg "HTTP_PROXY=$PROXY" --build-arg "HTTPS_PROXY=$PROXY"
+    $DC -f compose.yaml -f compose.build.yaml build --build-arg "HTTP_PROXY=$PROXY" --build-arg "HTTPS_PROXY=$PROXY"
   else
-    $DC build
+    $DC -f compose.yaml -f compose.build.yaml build
   fi
+  COMPOSE_ARGS="-f compose.yaml -f compose.build.yaml"
+else
+  echo "拉取镜像 kenzong/mica-amane:latest …"
+  $DC pull
+  COMPOSE_ARGS=""
 fi
 
 echo "启动容器…"
-$DC up -d
+$DC $COMPOSE_ARGS up -d
 
 # ---------- 等待就绪 ----------
 
