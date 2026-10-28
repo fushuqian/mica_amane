@@ -13,6 +13,7 @@
 - 修复：热更新完成后配置页没能被拉起来（重启请求把自身进程杀掉，后续启动调用发不出去），改为脱离进程执行 `supervisorctl restart console`；顺带补上 `[supervisorctl]` 段与重复代理去重。
 - 新增 GitHub Actions 工作流 `.github/workflows/publish.yml`：推送 `master` 时自动构建 `linux/amd64` 镜像并发布到 `kenzong/mica-amane:latest` 与 commit 标签（本机直推 Docker Hub 大层易超时，改由 CI 发布）。
 - 部署改为 compose 拉取已发布镜像：`compose.yaml` 默认 `image: kenzong/mica-amane:latest`，源码构建用 `compose.yaml + compose.build.yaml` 覆盖；`deploy.sh` 默认 `docker compose pull && up -d`，需要本地构建加 `--build`。
+- `publish.yml` 增加每周一 03:00 UTC 定时构建，用于跟随上游 amane 镜像更新。
 - 验证：容器内实测 mihomo v1.19.27 → v1.19.33（下载、解压、`-v` 校验、重启、`/api/status` 版本同步）；程序本体热更新后配置页 2 秒内自动恢复，`/api/updates` 显示当前提交与最新提交一致；`/api/updates` 正确比对三方版本并回报上游错误。
 
 ### mihomo 开关与 Token

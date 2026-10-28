@@ -10,6 +10,9 @@ on:
       - "compose.yaml"
       - ".github/workflows/publish.yml"
   workflow_dispatch:
+  schedule:
+    # 每周一 03:00 UTC（北京时间 11:00）重建一次，带上游 amane 的最新镜像
+    - cron: "0 3 * * 1"
 
 jobs:
   build:
