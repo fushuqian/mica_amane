@@ -8,14 +8,19 @@
     nextHandler: null,
   };
 
+  let lastTrigger = null;
+
   function toast(message, isError) {
-    const box = $('#toast');
+    const box = $('#mh-toast');
     if (!box) return;
-    const el = document.createElement('div');
-    el.className = 'toast' + (isError ? ' error' : '');
-    el.textContent = message;
-    box.appendChild(el);
-    setTimeout(() => el.remove(), 4200);
+    const icon = $('#mh-toast-icon');
+    const text = $('#mh-toast-text');
+    if (icon) icon.textContent = isError ? '!' : '✓';
+    if (text) text.textContent = message;
+    box.classList.toggle('is-error', Boolean(isError));
+    box.classList.add('is-visible');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => box.classList.remove('is-visible'), 2600);
   }
 
   async function api(path, options = {}) {
@@ -65,9 +70,9 @@
       ? '当前是首次免密模式：向导完成前，请不要把配置页暴露到公网。'
       : '已检测到现有登录保护，向导只做初始化检查与引导。';
     return `
-      <h3>欢迎使用 Mica Amane</h3>
+      <h3 class="mh-h3">欢迎使用 Mica Amane</h3>
       <p class="wizard-text">这是首次启动向导，会依次完成环境自检、订阅导入、amane 出网代理和登录账号设置。</p>
-      <div class="wizard-note">${esc(notice)}</div>
+      <div class="mh-note">${esc(notice)}</div>
       <p class="hint">随时可以关闭，之后从顶栏「设置向导」重新打开。</p>`;
   }
 
@@ -91,7 +96,7 @@
         : '尚未设置，将在最后一步完成';
 
     return `
-      <h3>环境自检</h3>
+      <h3 class="mh-h3">环境自检</h3>
       <p class="wizard-text">以下项目有问题不影响继续，但建议先处理。</p>
       <ul class="wizard-checks">
         ${checkRow(!secretDefault, 'CLASH_SECRET', secretDefault ? '仍是示例默认值，请去 .env 修改后重启' : '已自定义')}
@@ -103,11 +108,11 @@
 
   function renderSubscribe() {
     return `
-      <h3>导入订阅</h3>
+      <h3 class="mh-h3">导入订阅</h3>
       <p class="wizard-text">粘贴机场订阅地址，导入后会立即热加载。</p>
       <div class="wizard-form">
-        <input id="wizard-sub-url" type="url" placeholder="https://example.com/sub?token=..." spellcheck="false">
-        <button id="wizard-sub-import" class="btn primary" type="button">导入</button>
+        <input id="wizard-sub-url" class="mh-input mh-input--boxed" type="url" placeholder="https://example.com/sub?token=..." spellcheck="false" aria-label="订阅地址">
+        <button id="wizard-sub-import" class="mh-btn mh-btn--accent" type="button">导入</button>
       </div>
       <p id="wizard-sub-status" class="hint">不导入也可以先跳过，稍后在首页导入。</p>`;
   }
@@ -152,10 +157,10 @@
       ? '未知（amane 配置不可读）'
       : (cfg.proxy || '未设置');
     return `
-      <h3>amane 出网代理</h3>
+      <h3 class="mh-h3">amane 出网代理</h3>
       <p class="wizard-text">开启后 amane 经容器内 mihomo 出网（http://127.0.0.1:7890）。</p>
       <div class="wizard-toggle">
-        <button id="wizard-proxy-switch" class="switch" role="switch"
+        <button id="wizard-proxy-switch" class="mh-switch" role="switch"
                 aria-checked="${on ? 'true' : 'false'}" aria-label="amane 出网代理"><span></span></button>
         <span id="wizard-proxy-value" class="svc-value">${esc(value)}</span>
       </div>
@@ -194,11 +199,11 @@
       token = '';
     }
     return `
-      <h3>Token 与入口</h3>
+      <h3 class="mh-h3">Token 与入口</h3>
       <p class="wizard-text">amane 的 API Token，登入 amane 或接第三方工具时需要。</p>
       <div class="wizard-token">
-        <code id="wizard-token-value">${esc(token || '（未生成）')}</code>
-        <button id="wizard-token-copy" class="btn small" type="button">复制</button>
+        <code id="wizard-token-value" class="mh-code">${esc(token || '（未生成）')}</code>
+        <button id="wizard-token-copy" class="mh-btn mh-btn--soft" type="button">复制</button>
       </div>
       <p class="hint">
         <a href="${esc(amaneUrl())}" target="_blank" rel="noopener">打开 amane 页面</a>
@@ -232,18 +237,18 @@
         : '当前为免密状态，必须设置账号密码后才能完成。';
 
     return `
-      <h3>设置管理员账号</h3>
+      <h3 class="mh-h3">设置管理员账号</h3>
       <p class="wizard-text">${esc(sourceHint)}</p>
       <div class="wizard-form wizard-form-col">
         <label>用户名
-          <input id="wizard-user" type="text" value="${esc(username)}" autocomplete="username">
+          <input id="wizard-user" class="mh-input mh-input--boxed" type="text" value="${esc(username)}" autocomplete="username">
         </label>
         <label>密码
-          <input id="wizard-pass" type="password" placeholder="${source === 'none' ? '至少 8 位' : '留空表示不变'}"
+          <input id="wizard-pass" class="mh-input mh-input--boxed" type="password" placeholder="${source === 'none' ? '至少 8 位' : '留空表示不变'}"
                  autocomplete="new-password">
         </label>
         <label>确认密码
-          <input id="wizard-pass2" type="password" placeholder="再次输入" autocomplete="new-password">
+          <input id="wizard-pass2" class="mh-input mh-input--boxed" type="password" placeholder="再次输入" autocomplete="new-password">
         </label>
       </div>
       <p class="hint" id="wizard-account-hint">
@@ -267,7 +272,7 @@
       try {
         await api('/api/setup/complete', { method: 'POST', body: '{}' });
         toast('向导已完成');
-        $('#wizard').hidden = true;
+        closeWizard();
         setTimeout(() => location.reload(), 800);
       } catch (err) {
         toast('完成失败：' + err.message, true);
@@ -351,13 +356,20 @@
   function openWizard() {
     const root = $('#wizard');
     if (!root) return;
-    root.hidden = false;
+    lastTrigger = document.activeElement;
+    root.classList.add('is-open');
+    root.setAttribute('aria-hidden', 'false');
     go(1);
+    const close = $('#wizard-close');
+    if (close) close.focus();
   }
 
   function closeWizard() {
     const root = $('#wizard');
-    if (root) root.hidden = true;
+    if (!root) return;
+    root.classList.remove('is-open');
+    root.setAttribute('aria-hidden', 'true');
+    if (lastTrigger && typeof lastTrigger.focus === 'function') lastTrigger.focus();
   }
 
   function bindChrome() {
@@ -374,6 +386,12 @@
       });
     }
     if (close) close.addEventListener('click', closeWizard);
+    const scrim = $('#wizard .mh-modal__scrim');
+    if (scrim) scrim.addEventListener('click', closeWizard);
+    document.addEventListener('keydown', (event) => {
+      const root = $('#wizard');
+      if (event.key === 'Escape' && root && root.classList.contains('is-open')) closeWizard();
+    });
     if (open) {
       open.addEventListener('click', async () => {
         state.setup = await api('/api/setup/state').catch(() => state.setup);

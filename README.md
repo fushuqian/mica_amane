@@ -133,6 +133,8 @@ NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)�
 ## 配置页功能
 
 - amane 与 mihomo 的运行状态
+- 明暗双主题，顶栏圆形按钮切换，选择持久化
+- amane 对外端口设置（与「进入 amane」跳转联动）
 - amane 出网代理开关
 - amane Token 展示与一键复制（默认打码，点「显示」查看）
 - mihomo 服务开关：关闭即停止内核并同步关闭 amane 出网代理，重启后保持关闭

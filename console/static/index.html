@@ -4,105 +4,153 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mica Amane</title>
+  <link rel="stylesheet" href="/static/mica-ui.css">
   <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/theme.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="dot" id="global-dot"></span>
-      <h1>Mica Amane</h1>
-      <span class="sub">amane · mihomo</span>
-    </div>
-    <div class="top-actions">
-      <a id="link-amane-top" class="btn ghost" target="_blank" rel="noopener">amane</a>
-      <button id="open-wizard" class="btn ghost">设置向导</button>
-      <button id="refresh" class="btn">刷新</button>
-    </div>
+  <div class="mh-scene" aria-hidden="true">
+    <div class="mh-blob mh-blob--1"></div>
+    <div class="mh-blob mh-blob--2"></div>
+    <div class="mh-blob mh-blob--3"></div>
+  </div>
+
+  <header class="mh-topbar mh-glass">
+    <a class="mh-brand" href="/">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <rect x="3" y="7" width="17" height="5" rx="2.5" style="fill: var(--mh-accent); opacity: .34"/>
+        <rect x="6" y="13" width="17" height="5" rx="2.5" style="fill: var(--mh-accent); opacity: .62"/>
+        <rect x="9" y="19" width="17" height="5" rx="2.5" style="fill: var(--mh-accent)"/>
+      </svg>
+      <span class="mh-brand__name">
+        <b>Mica Amane</b>
+        <span>amane · mihomo</span>
+      </span>
+    </a>
+    <div class="mh-spacer"></div>
+    <span class="mh-status" id="global-status"><i></i><span>CHECKING</span></span>
+    <a id="link-amane-top" class="mh-btn mh-btn--soft topbar-extra" target="_blank" rel="noopener">amane</a>
+    <button id="open-wizard" class="mh-btn mh-btn--soft topbar-extra" type="button">设置向导</button>
+    <button id="refresh" class="mh-btn" type="button">刷新</button>
+    <button class="mh-theme-toggle" data-theme-toggle type="button" aria-pressed="false" aria-label="切换主题">
+      <svg class="i-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/>
+      </svg>
+      <svg class="i-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 14.5A8.2 8.2 0 1 1 9.5 4a6.6 6.6 0 0 0 10.5 10.5Z"/>
+      </svg>
+    </button>
   </header>
 
-  <main>
+  <main class="mh-container">
     <div class="service-grid">
-      <section class="service-card" data-key="amane">
-        <div class="svc-head">
-          <div class="svc-name">
-            <span class="dot" id="dot-amane"></span>
-            <h2>amane</h2>
+      <section class="mh-card service-card" data-key="amane" style="--d:60ms">
+        <div class="mh-card__head svc-head">
+          <div class="mh-icon mh-tone-a">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="3"/>
+              <path d="M3 10h18M7.5 15h4"/>
+            </svg>
           </div>
-          <button class="svc-toggle" type="button" aria-expanded="true"
-                  aria-controls="body-amane" aria-label="展开或收起 amane">▾</button>
+          <div class="svc-title">
+            <h2 class="mh-h3">amane</h2>
+            <div class="mh-meta mh-mono">PORT <span id="port-amane">8000</span></div>
+          </div>
+          <span class="mh-status svc-state"><i></i><span id="state-amane">CHECKING</span></span>
+          <button class="mh-icon-btn svc-toggle" type="button" aria-expanded="true"
+                  aria-controls="body-amane" aria-label="展开或收起 amane">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
         </div>
 
         <div class="svc-body" id="body-amane">
-          <p class="svc-meta"><span id="state-amane">检测中…</span> · 端口 <span id="port-amane">8000</span></p>
+          <p class="svc-summary">影库刮削服务</p>
 
-          <div class="port-row">
-            <input id="amane-port-input" type="number" min="1" max="65535" placeholder="对外端口" aria-label="amane 对外端口">
-            <button id="amane-port-save" class="btn small" type="button">保存端口</button>
+          <div class="svc-section">
+            <div class="svc-label"><span class="mh-label">对外端口</span></div>
+            <div class="row">
+              <input id="amane-port-input" class="mh-input mh-input--boxed port-input" type="number"
+                     min="1" max="65535" placeholder="对外端口" aria-label="amane 对外端口">
+              <button id="amane-port-save" class="mh-btn mh-btn--soft" type="button">保存端口</button>
+            </div>
+            <p class="mh-meta">宿主端口与容器 8000 不一致时填这里（如 16509），「进入 amane」会跳到该端口。</p>
           </div>
-          <p class="hint">宿主端口与容器 8000 不一致时填这里（如 16509），「进入 amane」会跳到该端口。</p>
 
           <div class="svc-section">
             <div class="svc-label">
-              <span>出网代理</span>
-              <button id="proxy-switch" class="switch" role="switch" aria-checked="false"
-                      aria-label="amane 出网代理"><span></span></button>
+              <span class="mh-label">出网代理</span>
+              <button id="proxy-switch" class="mh-switch" role="switch"
+                      aria-checked="false" aria-label="amane 出网代理"><span></span></button>
             </div>
             <p class="svc-value" id="proxy-value">未知</p>
-            <p class="hint">开启后 amane 经容器内 mihomo 出网（http://127.0.0.1:7890）。</p>
+            <p class="mh-meta">开启后 amane 经容器内 mihomo 出网（http://127.0.0.1:7890）。</p>
           </div>
 
           <div class="svc-section">
-            <div class="svc-label"><span>Token</span></div>
+            <div class="svc-label"><span class="mh-label">Token</span></div>
             <div class="token-row">
-              <code id="token-value">读取中…</code>
-              <button id="token-reveal" class="btn small" type="button">显示</button>
-              <button id="token-copy" class="btn small" type="button">复制</button>
+              <code id="token-value" class="mh-code">读取中…</code>
+              <button id="token-reveal" class="mh-btn mh-btn--soft" type="button">显示</button>
+              <button id="token-copy" class="mh-btn mh-btn--soft" type="button">复制</button>
             </div>
-            <p class="hint">amane 的 API Token，登入 amane 或接第三方工具时使用；默认打码，点「显示」查看明文。</p>
+            <p class="mh-meta">amane 的 API Token，登入 amane 或接第三方工具时使用；默认打码，点「显示」查看明文。</p>
           </div>
 
-          <div class="svc-footer">
-            <a id="link-amane" class="btn primary" target="_blank" rel="noopener">进入 amane</a>
+          <div class="svc-foot">
+            <a id="link-amane" class="mh-btn mh-btn--soft" target="_blank" rel="noopener">进入 amane</a>
           </div>
         </div>
       </section>
 
-      <section class="service-card" data-key="mihomo">
-        <div class="svc-head">
-          <div class="svc-name">
-            <span class="dot" id="dot-mihomo"></span>
-            <h2>mihomo</h2>
+      <section class="mh-card service-card" data-key="mihomo" style="--d:115ms">
+        <div class="mh-card__head svc-head">
+          <div class="mh-icon mh-tone-b">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="6" cy="18" r="2.5"/>
+              <circle cx="18" cy="6" r="2.5"/>
+              <path d="M8.2 16.2 15.8 8M10 6h4M6 10v4"/>
+            </svg>
           </div>
-          <div class="svc-actions">
-            <button id="mihomo-switch" class="switch" role="switch" aria-checked="false"
-                    aria-label="mihomo 服务"><span></span></button>
-            <button class="svc-toggle" type="button" aria-expanded="true"
-                    aria-controls="body-mihomo" aria-label="展开或收起 mihomo">▾</button>
+          <div class="svc-title">
+            <h2 class="mh-h3">mihomo</h2>
+            <div class="mh-meta mh-mono">PROXY CORE</div>
           </div>
+          <span class="mh-status svc-state"><i></i><span id="state-mihomo-badge">CHECKING</span></span>
+          <button id="mihomo-switch" class="mh-switch svc-service-switch" role="switch"
+                  aria-checked="false" aria-label="mihomo 服务开关"><span></span></button>
+          <button class="mh-icon-btn svc-toggle" type="button" aria-expanded="true"
+                  aria-controls="body-mihomo" aria-label="展开或收起 mihomo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
         </div>
 
         <div class="svc-body" id="body-mihomo">
-          <p class="svc-meta"><span id="state-mihomo">检测中…</span></p>
-          <p class="hint">关闭开关会停止 mihomo 内核，同时关闭 amane 的出网代理。</p>
+          <p class="svc-summary" id="state-mihomo">检测中…</p>
+          <p class="mh-meta">关闭开关会停止 mihomo 内核，同时关闭 amane 的出网代理。</p>
 
           <div class="svc-section">
-            <div class="svc-label"><span>模式</span></div>
+            <div class="svc-label"><span class="mh-label">模式</span></div>
             <div class="segmented" id="mode-switch">
-              <button type="button" data-mode="rule">规则</button>
-              <button type="button" data-mode="global">全局</button>
-              <button type="button" data-mode="direct">直连</button>
+              <button class="mh-chip" type="button" data-mode="rule" aria-pressed="false">规则</button>
+              <button class="mh-chip" type="button" data-mode="global" aria-pressed="false">全局</button>
+              <button class="mh-chip" type="button" data-mode="direct" aria-pressed="false">直连</button>
             </div>
           </div>
 
           <div class="svc-section">
             <div class="svc-label">
-              <span>当前节点</span>
+              <span class="mh-label">当前节点</span>
               <span class="svc-value" id="node-now">-</span>
             </div>
             <div class="row">
-              <select id="node-group"></select>
-              <button id="node-toggle" class="btn small" type="button">节点</button>
-              <button id="node-test" class="btn small" type="button">测速</button>
+              <select id="node-group" aria-label="代理组"></select>
+              <button id="node-toggle" class="mh-btn mh-btn--soft" type="button">节点</button>
+              <button id="node-test" class="mh-btn mh-btn--soft" type="button">测速</button>
             </div>
             <div id="node-list" class="node-list" hidden></div>
             <button id="blocked-toggle" class="blocked-toggle" type="button" hidden>已屏蔽 0</button>
@@ -110,48 +158,73 @@
           </div>
 
           <div class="svc-section">
-            <div class="svc-label"><span>订阅</span></div>
-            <form id="sub-form" class="row">
-              <input id="sub-url" type="url" placeholder="https://example.com/sub?token=..." required>
-              <button class="btn primary" type="submit">导入</button>
+            <div class="svc-label"><span class="mh-label">订阅</span></div>
+            <form id="sub-form" class="sub-form">
+              <input id="sub-url" class="mh-input mh-input--boxed" type="url"
+                     placeholder="https://example.com/sub?token=..." required aria-label="订阅地址">
+              <button class="mh-btn mh-btn--accent" type="submit">导入</button>
             </form>
-            <p class="hint">导入成功后写入配置并热加载，节点列表会自动更新；重启容器后依然生效。</p>
+            <p class="mh-meta">导入成功后写入配置并热加载，节点列表会自动更新；重启容器后依然生效。</p>
           </div>
         </div>
       </section>
-    </div>
 
-    <section class="service-card" id="updates-card">
-      <div class="svc-head">
-        <div class="svc-name">
-          <span class="dot"></span>
-          <h2>更新</h2>
+      <section class="mh-card service-card" id="updates-card" data-key="updates" style="--d:170ms">
+        <div class="mh-card__head svc-head">
+          <div class="mh-icon mh-tone-d">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 12a8 8 0 1 1-2.6-5.9"/>
+              <path d="M20 4v4h-4"/>
+            </svg>
+          </div>
+          <div class="svc-title">
+            <h2 class="mh-h3">更新</h2>
+            <div class="mh-meta mh-mono">VERSION</div>
+          </div>
+          <button id="updates-check" class="mh-btn mh-btn--soft svc-state" type="button">检查更新</button>
+          <button class="mh-icon-btn svc-toggle" type="button" aria-expanded="true"
+                  aria-controls="body-updates" aria-label="展开或收起更新">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
         </div>
-        <div class="svc-actions">
-          <button id="updates-check" class="btn small" type="button">检查更新</button>
+
+        <div class="svc-body" id="body-updates">
+          <div id="update-list"><p class="svc-summary">点「检查更新」对比 GitHub 最新版本</p></div>
+          <p class="mh-meta">程序本体与 mihomo 直接从 GitHub 更新；amane 服务端只能随镜像更新。下载走国外线路，慢时可能等几分钟。</p>
         </div>
-      </div>
-      <div class="svc-body">
-        <div id="update-list"><p class="svc-meta">点「检查更新」对比 GitHub 最新版本</p></div>
-        <p class="hint">程序本体与 mihomo 直接从 GitHub 更新；amane 服务端只能随镜像更新。下载走国外线路，慢时可能等几分钟。</p>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>
 
-  <div id="toast"></div>
+  <div class="mh-toast" id="mh-toast" role="status" aria-live="polite">
+    <span class="mh-toast__icon" id="mh-toast-icon">✓</span>
+    <span id="mh-toast-text"></span>
+  </div>
 
-  <div id="wizard" class="wizard" hidden>
-    <div class="wizard-card">
-      <header class="wizard-head">
-        <span id="wizard-step">1 / 6</span>
-        <button id="wizard-close" class="wizard-close" type="button" aria-label="关闭">×</button>
+  <div class="mh-modal" id="wizard" aria-hidden="true">
+    <div class="mh-modal__scrim"></div>
+    <section class="mh-modal__panel" role="dialog" aria-modal="true" aria-labelledby="wizard-title">
+      <header class="mh-modal__head">
+        <div class="mh-icon mh-tone-a">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2 1.2l.4 2.6h4l.4-2.6a7 7 0 0 0 2-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z"/>
+          </svg>
+        </div>
+        <div class="mh-modal__title">
+          <b id="wizard-title">首次配置向导</b>
+          <span id="wizard-step">1 / 6</span>
+        </div>
+        <button class="mh-modal__close" id="wizard-close" type="button" aria-label="关闭">✕</button>
       </header>
-      <div id="wizard-body"></div>
+      <div class="mh-modal__body" id="wizard-body"></div>
       <footer class="wizard-foot">
-        <button id="wizard-prev" class="btn" type="button">上一步</button>
-        <button id="wizard-next" class="btn primary" type="button">下一步</button>
+        <button id="wizard-prev" class="mh-btn mh-btn--soft" type="button">上一步</button>
+        <button id="wizard-next" class="mh-btn mh-btn--accent" type="button">下一步</button>
       </footer>
-    </div>
+    </section>
   </div>
 
   <script src="/static/onboarding.js"></script>

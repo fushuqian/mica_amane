@@ -17,11 +17,16 @@ const state = {
 };
 
 function toast(message, isError = false) {
-  const el = document.createElement('div');
-  el.className = 'toast' + (isError ? ' error' : '');
-  el.textContent = message;
-  $('#toast').appendChild(el);
-  setTimeout(() => el.remove(), 4200);
+  const el = $('#mh-toast');
+  if (!el) return;
+  const icon = $('#mh-toast-icon');
+  const text = $('#mh-toast-text');
+  if (icon) icon.textContent = isError ? '!' : '✓';
+  if (text) text.textContent = message;
+  el.classList.toggle('is-error', isError);
+  el.classList.add('is-visible');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => el.classList.remove('is-visible'), 2600);
 }
 
 async function api(path, options = {}) {
@@ -82,15 +87,26 @@ async function saveAmanePort() {
 
 /* ---------------- 状态 ---------------- */
 
-function setDot(id, online) {
-  const dot = $(id);
-  if (dot) dot.className = 'dot ' + (online ? 'online' : 'offline');
+function setStatus(id, online) {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = online ? 'ONLINE' : 'OFFLINE';
+  const box = el.closest('.mh-status');
+  if (box) box.classList.toggle('is-offline', !online);
+}
+
+function setGlobalStatus(online) {
+  const box = $('#global-status');
+  if (!box) return;
+  const label = box.querySelector('span');
+  if (label) label.textContent = online ? 'ONLINE' : 'OFFLINE';
+  box.classList.toggle('is-offline', !online);
 }
 
 function markMode(mode) {
   state.mode = (mode || 'rule').toLowerCase();
-  document.querySelectorAll('#mode-switch button').forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.mode === state.mode);
+  document.querySelectorAll('#mode-switch .mh-chip').forEach((btn) => {
+    btn.setAttribute('aria-pressed', btn.dataset.mode === state.mode ? 'true' : 'false');
   });
 }
 
@@ -120,9 +136,8 @@ async function refreshStatus() {
     // null 表示配置页拿不到 supervisor 控制通道
     const running = typeof mihomo.running === 'boolean' ? mihomo.running : null;
 
-    setDot('#dot-amane', amane.online);
-    setDot('#dot-mihomo', mihomo.online);
-    $('#state-amane').textContent = amane.online ? '在线' : '离线';
+    setStatus('#state-amane', amane.online);
+    setStatus('#state-mihomo-badge', mihomo.online);
 
     const serviceSwitch = $('#mihomo-switch');
     serviceSwitch.setAttribute('aria-checked', running ? 'true' : 'false');
@@ -143,14 +158,13 @@ async function refreshStatus() {
 
     const allOnline = ['amane', 'mihomo']
       .every((key) => services[key] && services[key].online);
-    const globalDot = $('#global-dot');
-    globalDot.className = 'dot ' + (allOnline ? 'online' : 'offline');
+    setGlobalStatus(allOnline);
 
     if (amane.online) await refreshAmaneProxy();
     else renderProxyState(null, false);
   } catch (err) {
     toast('状态获取失败：' + err.message, true);
-    $('#global-dot').className = 'dot offline';
+    setGlobalStatus(false);
   }
 }
 
@@ -344,7 +358,7 @@ function renderNodes() {
 
   if (!group) {
     nowEl.textContent = '-';
-    list.innerHTML = '<p class="hint">暂无可切换的代理组（可能还没有导入订阅）。</p>';
+    list.innerHTML = '<div class="mh-empty"><b>暂无代理组</b>可能还没有导入订阅。</div>';
     renderBlocked();
     return;
   }
@@ -367,7 +381,8 @@ function renderNodes() {
 
     const chip = document.createElement('button');
     chip.type = 'button';
-    chip.className = 'node-chip' + (name === now ? ' active' : '');
+    chip.className = 'mh-chip node-chip';
+    chip.setAttribute('aria-pressed', name === now ? 'true' : 'false');
     chip.innerHTML = `<span>${escapeHtml(name)}</span><span class="ms"></span>`;
     chip.addEventListener('click', () => selectNode(name));
     const ms = chip.querySelector('.ms');
@@ -375,9 +390,10 @@ function renderNodes() {
 
     const block = document.createElement('button');
     block.type = 'button';
-    block.className = 'node-block';
+    block.className = 'mh-icon-btn node-block';
     block.title = '屏蔽该节点';
-    block.textContent = '⊘';
+    block.setAttribute('aria-label', `屏蔽 ${name}`);
+    block.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 18 18 6"/></svg>';
     block.addEventListener('click', () => toggleBlocked(name, true));
 
     item.append(chip, block);
@@ -407,14 +423,15 @@ function renderBlocked() {
     item.className = 'node-item';
 
     const chip = document.createElement('span');
-    chip.className = 'node-chip blocked';
+    chip.className = 'mh-chip node-chip is-blocked';
     chip.textContent = name;
 
     const restore = document.createElement('button');
     restore.type = 'button';
-    restore.className = 'node-block';
+    restore.className = 'mh-icon-btn node-block';
     restore.title = '取消屏蔽';
-    restore.textContent = '↺';
+    restore.setAttribute('aria-label', `恢复 ${name}`);
+    restore.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v4h4"/></svg>';
     restore.addEventListener('click', () => toggleBlocked(name, false));
 
     item.append(chip, restore);
@@ -528,7 +545,7 @@ function setupCardCollapse() {
     const head = card.querySelector('.svc-head');
     if (!head) return;
     head.addEventListener('click', (event) => {
-      if (event.target.closest('.switch')) return;
+      if (event.target.closest('.mh-switch')) return;
       const next = !card.classList.contains('collapsed');
       applyCollapsed(card, next);
       const saved = loadFolds();
@@ -603,13 +620,13 @@ function renderUpdates(payload) {
       if (key === 'amane') {
         action = '<span class="update-note">随镜像更新</span>';
       } else if (item.has_update) {
-        action = `<button class="btn small" type="button" data-target="${key}">更新</button>`;
+        action = `<button class="mh-btn mh-btn--soft" type="button" data-target="${key}">更新</button>`;
       } else {
         action = '<span class="update-note">已是最新</span>';
       }
       return `<div class="update-row">
         <span class="update-name">${UPDATE_NAMES[key]}</span>
-        <span class="update-ver"><code>${escapeHtml(current)}</code><i>→</i><code>${escapeHtml(latest)}</code></span>
+        <span class="update-ver"><code class="mh-code">${escapeHtml(current)}</code><i>→</i><code class="mh-code">${escapeHtml(latest)}</code></span>
         ${action}
       </div>`;
     })
