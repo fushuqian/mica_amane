@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import os
 import secrets as pysecrets
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import httpx
@@ -21,7 +22,19 @@ CONSOLE_PASSWORD = os.environ.get("CONSOLE_PASSWORD", "")
 
 PUBLIC_PATHS = {"/healthz", "/api/setup/state"}
 
-app = FastAPI(title="Mica Amane Console", docs_url=None, redoc_url=None)
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # 容器重启后 mihomo 会被 supervisor 自动拉起，这里恢复上一次「已关闭」的选择
+    if not store.service_enabled():
+        try:
+            await c.service_control("mihomo", "stop")
+        except c.SupervisorError:
+            pass
+    yield
+
+
+app = FastAPI(title="Mica Amane Console", docs_url=None, redoc_url=None, lifespan=lifespan)
 
 
 def _auth_source() -> str:
@@ -93,6 +106,7 @@ def _public_links() -> dict[str, str]:
 @app.get("/api/status")
 async def status():
     services: dict[str, dict] = {}
+    mihomo_running = await c.service_running("mihomo")
     async with httpx.AsyncClient(timeout=4.0) as client:
         try:
             resp = await client.get(f"{c.AMANE_URL}/api/health")
@@ -101,23 +115,28 @@ async def status():
             services["amane"] = {"online": False, "detail": str(exc)}
 
         mihomo: dict = {"online": False}
-        try:
-            ver = await client.get(f"{c.MIHOMO_URL}/version", headers=c.clash_headers())
-            mihomo = {"online": ver.status_code == 200, "version": _json(ver)}
-            cfg = await client.get(f"{c.MIHOMO_URL}/configs", headers=c.clash_headers())
-            if cfg.status_code == 200:
-                data = cfg.json()
-                mihomo.update(
-                    {
-                        "mode": data.get("mode"),
-                        "mixed_port": data.get("mixed-port"),
-                        "port": data.get("port"),
-                        "socks_port": data.get("socks-port"),
-                        "allow_lan": data.get("allow-lan"),
-                    }
-                )
-        except Exception as exc:  # noqa: BLE001
-            mihomo["detail"] = str(exc)
+        if mihomo_running is False:
+            # 内核已被主动停止，不再探测 9090，避免每次刷新都等超时
+            mihomo["running"] = False
+        else:
+            try:
+                ver = await client.get(f"{c.MIHOMO_URL}/version", headers=c.clash_headers())
+                mihomo = {"online": ver.status_code == 200, "version": _json(ver)}
+                cfg = await client.get(f"{c.MIHOMO_URL}/configs", headers=c.clash_headers())
+                if cfg.status_code == 200:
+                    data = cfg.json()
+                    mihomo.update(
+                        {
+                            "mode": data.get("mode"),
+                            "mixed_port": data.get("mixed-port"),
+                            "port": data.get("port"),
+                            "socks_port": data.get("socks-port"),
+                            "allow_lan": data.get("allow-lan"),
+                        }
+                    )
+            except Exception as exc:  # noqa: BLE001
+                mihomo["detail"] = str(exc)
+            mihomo["running"] = mihomo_running
         services["mihomo"] = mihomo
 
     return {"services": services, "links": _public_links()}
@@ -201,6 +220,15 @@ class ProxyBody(BaseModel):
     enabled: bool | None = None
 
 
+async def _apply_amane_proxy(target: str | None) -> httpx.Response:
+    """写 amane 出网代理；None / 空字符串表示关闭。"""
+    resp = await c.patch_amane("/api/config", {"network": {"proxy": target}})
+    if target is None and resp.status_code >= 400:
+        # 部分版本不接受 null，退回空字符串表示不启用代理
+        resp = await c.patch_amane("/api/config", {"network": {"proxy": ""}})
+    return resp
+
+
 @app.post("/api/amane/proxy")
 async def set_amane_proxy(body: ProxyBody):
     if body.enabled is False:
@@ -211,11 +239,7 @@ async def set_amane_proxy(body: ProxyBody):
             target = c.PROXY_URL
 
     try:
-        resp = await c.patch_amane("/api/config", {"network": {"proxy": target}})
-        if target is None and resp.status_code >= 400:
-            # 部分版本不接受 null，退回空字符串表示不启用代理
-            target = ""
-            resp = await c.patch_amane("/api/config", {"network": {"proxy": target}})
+        resp = await _apply_amane_proxy(target)
     except httpx.HTTPError as exc:
         raise HTTPException(502, f"无法连接 amane：{exc}") from exc
     if resp.status_code >= 400:
@@ -255,6 +279,47 @@ async def mihomo_mode(body: ModeBody):
 @app.get("/api/mihomo/blocked")
 async def mihomo_blocked():
     return {"blocked": store.load_blocked()}
+
+
+class ServiceBody(BaseModel):
+    enabled: bool
+
+
+@app.get("/api/mihomo/service")
+async def mihomo_service():
+    state = await c.service_state("mihomo")
+    return {
+        "available": state is not None,
+        "state": state,
+        "enabled": None if state is None else state not in {"STOPPED", "EXITED", "FATAL"},
+    }
+
+
+@app.post("/api/mihomo/service")
+async def mihomo_set_service(body: ServiceBody):
+    if not body.enabled:
+        # 先摘掉 amane 的出网代理，避免它继续指向已停的 7890
+        try:
+            resp = await _apply_amane_proxy(None)
+            proxy_cleared = resp.status_code < 400
+        except httpx.HTTPError:
+            proxy_cleared = False
+
+        try:
+            await c.service_control("mihomo", "stop")
+        except c.SupervisorError as exc:
+            raise HTTPException(503, f"停止 mihomo 失败：{exc}") from exc
+
+        store.save_service_enabled(False)
+        return {"ok": True, "enabled": False, "proxy_cleared": proxy_cleared}
+
+    try:
+        await c.service_control("mihomo", "start")
+    except c.SupervisorError as exc:
+        raise HTTPException(502, f"启动 mihomo 失败：{exc}") from exc
+
+    store.save_service_enabled(True)
+    return {"ok": True, "enabled": True}
 
 
 class BlockedBody(BaseModel):

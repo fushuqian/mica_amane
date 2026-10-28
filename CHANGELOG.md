@@ -2,6 +2,16 @@
 
 ## 2026-10-28
 
+- 首页 mihomo 卡片新增服务开关：关闭后停止 mihomo 内核，同时把 amane 出网代理清空；开启只恢复内核，不自动重新挂代理。
+- 启停通过 supervisor XML-RPC 完成：supervisord 新增 `[unix_http_server]`（`/run/supervisor.sock`，chown appuser、chmod 0660）与 `[rpcinterface:supervisor]`；配置页以 appuser 身份调用，不需要额外权限。
+- 关闭状态写入 `/data/mihomo/service.json`；容器重启后配置页启动时检测到「已关闭」会再次停掉被 supervisor 自动拉起的 mihomo。
+- `/api/status` 新增 `services.mihomo.running`；内核被主动停止时不再探测 9090，避免每次刷新等 4 秒超时。前端在停止状态显示「已停止」，并禁用 amane 出网代理开关。
+- amane 卡片新增 Token 区块：默认打码，可「显示 / 隐藏」，一键复制（非 HTTPS 环境自动回退 textarea 方案，避免 clipboard API 不可用）。
+- 新增接口：`GET /api/mihomo/service`（返回 available/state/enabled）、`POST /api/mihomo/service`（`{"enabled": false}` 会先清代理再停内核）。
+- 验证：真实容器内用 python:3.14-slim + supervisor 跑通 —— 关闭后 socket 进程 STOPPED、9090 端口关闭、假 amane 的 `network.proxy` 变为 null、`/api/status` 返回 `running:false`；重新开启后回到 RUNNING；`service.json` 正确写入。前端在 mock 页面验证开关、状态切换、Token 打码/显示/复制与折叠不误触，控制台无报错。
+
+### 同日早前
+
 - 首页卡片改为垂直排列：amane 在上、mihomo 在下；两张卡片标题栏可点击折叠/展开，状态记忆在浏览器 localStorage。
 - Docker Hub 仓库说明已同步：短描述 + 完整 README（相对链接改为 GitHub 绝对地址）。
 - 新增 `README.md`：项目说明、端口/目录、三种部署方式（NAS Compose / 一键脚本 / 源码构建）、环境变量表、首次向导、升级与常见问题。

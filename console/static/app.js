@@ -11,6 +11,9 @@ const state = {
   groupName: null,
   blocked: new Set(),
   delays: new Map(),
+  token: '',
+  tokenShown: false,
+  tokenError: false,
 };
 
 function toast(message, isError = false) {
@@ -91,12 +94,21 @@ async function refreshStatus() {
 
     const amane = services.amane || { online: false };
     const mihomo = services.mihomo || { online: false };
+    // null 表示配置页拿不到 supervisor 控制通道
+    const running = typeof mihomo.running === 'boolean' ? mihomo.running : null;
 
     setDot('#dot-amane', amane.online);
     setDot('#dot-mihomo', mihomo.online);
     $('#state-amane').textContent = amane.online ? '在线' : '离线';
 
-    if (mihomo.online) {
+    const serviceSwitch = $('#mihomo-switch');
+    serviceSwitch.setAttribute('aria-checked', running ? 'true' : 'false');
+    serviceSwitch.disabled = running === null;
+    $('#proxy-switch').disabled = running === false;
+
+    if (running === false) {
+      $('#state-mihomo').textContent = '已停止';
+    } else if (mihomo.online) {
       const ver = mihomo.version && (mihomo.version.version || mihomo.version.message);
       const parts = [ver, mihomo.mode ? `mode ${mihomo.mode}` : ''];
       if (mihomo.mixed_port != null) parts.push(`mixed-port ${mihomo.mixed_port}`);
@@ -147,6 +159,102 @@ async function toggleAmaneProxy() {
   } finally {
     sw.disabled = false;
   }
+}
+
+/* ---------------- mihomo 服务开关 ---------------- */
+
+async function toggleMihomoService() {
+  const sw = $('#mihomo-switch');
+  const next = sw.getAttribute('aria-checked') !== 'true';
+  sw.disabled = true;
+  try {
+    const data = await api('/api/mihomo/service', {
+      method: 'POST',
+      body: JSON.stringify({ enabled: next }),
+    });
+    if (next) {
+      toast('mihomo 已启动');
+    } else if (data.proxy_cleared === false) {
+      toast('mihomo 已停止；amane 出网代理未关闭（amane 不可达）', true);
+    } else {
+      toast('mihomo 已停止，amane 出网代理已关闭');
+    }
+  } catch (err) {
+    toast((next ? '启动' : '停止') + '失败：' + err.message, true);
+  } finally {
+    await refreshStatus();
+  }
+}
+
+/* ---------------- amane Token ---------------- */
+
+async function loadToken() {
+  try {
+    const data = await api('/api/amane/token');
+    state.token = (data && data.token) || '';
+    state.tokenError = false;
+  } catch {
+    state.token = '';
+    state.tokenError = true;
+  }
+  renderToken();
+}
+
+function renderToken() {
+  const code = $('#token-value');
+  const reveal = $('#token-reveal');
+  if (!state.token) {
+    code.textContent = state.tokenError ? '读取失败' : '未生成';
+  } else if (state.tokenShown) {
+    code.textContent = state.token;
+  } else {
+    code.textContent = '•'.repeat(16);
+  }
+  reveal.hidden = !state.token;
+  reveal.textContent = state.tokenShown ? '隐藏' : '显示';
+}
+
+function toggleToken() {
+  state.tokenShown = !state.tokenShown;
+  renderToken();
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch {
+    ok = false;
+  }
+  ta.remove();
+  return ok;
+}
+
+async function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      /* 落到下面的兜底方案 */
+    }
+  }
+  return fallbackCopy(text);
+}
+
+async function copyToken() {
+  if (!state.token) {
+    toast('没有可复制的 Token', true);
+    return;
+  }
+  if (await copyText(state.token)) toast('Token 已复制');
+  else toast('复制失败，请手动选中复制', true);
 }
 
 /* ---------------- mihomo 模式 ---------------- */
@@ -396,7 +504,8 @@ function setupCardCollapse() {
     applyCollapsed(card, Boolean(folds[key]));
     const head = card.querySelector('.svc-head');
     if (!head) return;
-    head.addEventListener('click', () => {
+    head.addEventListener('click', (event) => {
+      if (event.target.closest('.switch')) return;
       const next = !card.classList.contains('collapsed');
       applyCollapsed(card, next);
       const saved = loadFolds();
@@ -416,6 +525,9 @@ $('#refresh').addEventListener('click', () => {
   refreshStatus();
 });
 $('#proxy-switch').addEventListener('click', toggleAmaneProxy);
+$('#mihomo-switch').addEventListener('click', toggleMihomoService);
+$('#token-reveal').addEventListener('click', toggleToken);
+$('#token-copy').addEventListener('click', copyToken);
 $('#mode-switch').addEventListener('click', (event) => {
   const btn = event.target.closest('button[data-mode]');
   if (btn) setMode(btn.dataset.mode);
@@ -448,6 +560,7 @@ $('#sub-form').addEventListener('submit', importSubscription);
 async function init() {
   setupCardCollapse();
   await loadBlocked();
+  await loadToken();
   await refreshStatus();
   try {
     await loadGroups();

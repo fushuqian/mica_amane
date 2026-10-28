@@ -20,6 +20,7 @@ MIHOMO_YAML = CONSOLE_DIR / "config.yaml"
 BLOCKED_JSON = CONSOLE_DIR / "blocked_nodes.json"
 CREDENTIALS_JSON = CONSOLE_DIR / "credentials.json"
 ONBOARDED_JSON = CONSOLE_DIR / "onboarded.json"
+SERVICE_JSON = CONSOLE_DIR / "service.json"
 
 PBKDF2_ITERATIONS = 200_000
 
@@ -101,6 +102,21 @@ def save_blocked(names: list[str]) -> list[str]:
     cleaned = sorted({str(name) for name in names if str(name)})
     _write_json(BLOCKED_JSON, {"blocked": cleaned}, ".blocked-", 0o644)
     return cleaned
+
+
+def service_enabled() -> bool:
+    """mihomo 期望的运行状态；文件缺失时默认开启。"""
+    try:
+        data = json.loads(SERVICE_JSON.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return True
+    if not isinstance(data, dict):
+        return True
+    return bool(data.get("enabled", True))
+
+
+def save_service_enabled(enabled: bool) -> None:
+    _write_json(SERVICE_JSON, {"enabled": bool(enabled)}, ".service-", 0o644)
 
 
 def _write_json(path: Path, payload: dict, prefix: str, mode: int) -> None:

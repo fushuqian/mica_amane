@@ -131,6 +131,8 @@ NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)�
 
 - amane 与 mihomo 的运行状态
 - amane 出网代理开关
+- amane Token 展示与一键复制（默认打码，点「显示」查看）
+- mihomo 服务开关：关闭即停止内核并同步关闭 amane 出网代理，重启后保持关闭
 - mihomo 模式切换（规则 / 全局 / 直连）
 - 当前节点切换、延迟测速、节点屏蔽
 - 订阅导入（写入 `config.yaml` 并热加载，重启依然生效）
@@ -152,6 +154,7 @@ NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)�
     ├── blocked_nodes.json # 节点屏蔽名单
     ├── credentials.json   # 登录凭据（PBKDF2 哈希，无明文）
     ├── onboarded.json     # 向导完成标记
+    ├── service.json       # mihomo 期望运行状态（关闭开关后为 false）
     └── geoip.dat / GeoSite.dat / geoip.metadb
 ```
 

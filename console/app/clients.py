@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import asyncio
+import http.client
 import os
+import socket
+import xmlrpc.client
 from pathlib import Path
 from urllib.parse import quote
 
@@ -10,6 +14,7 @@ AMANE_URL = os.environ.get("CONSOLE_AMANE_URL", "http://127.0.0.1:8000").rstrip(
 MIHOMO_URL = os.environ.get("CONSOLE_MIHOMO_URL", "http://127.0.0.1:9090").rstrip("/")
 CLASH_SECRET = os.environ.get("CLASH_SECRET", "")
 DATA_DIR = Path(os.environ.get("CONSOLE_DATA_DIR", "/data"))
+SUPERVISOR_SOCK = os.environ.get("CONSOLE_SUPERVISOR_SOCK", "/run/supervisor.sock")
 
 PROXY_URL = "http://127.0.0.1:7890"
 SUB_PROXY_URL = "socks5h://127.0.0.1:7890"
@@ -95,3 +100,74 @@ def delay_url(name: str, test_url: str, timeout_ms: int) -> str:
         f"/proxies/{quote(name, safe='')}/delay"
         f"?url={quote(test_url, safe='')}&timeout={timeout_ms}"
     )
+
+
+# ---------------- supervisor 控制（启停 mihomo） ----------------
+
+
+class SupervisorError(RuntimeError):
+    """supervisor 控制接口不可用或调用失败。"""
+
+
+class _UnixHTTPConnection(http.client.HTTPConnection):
+    def __init__(self, socket_path: str):
+        super().__init__("localhost", timeout=15)
+        self._socket_path = socket_path
+
+    def connect(self) -> None:
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock.settimeout(self.timeout)
+        sock.connect(self._socket_path)
+        self.sock = sock
+
+
+class _UnixTransport(xmlrpc.client.Transport):
+    def make_connection(self, host):
+        return _UnixHTTPConnection(SUPERVISOR_SOCK)
+
+
+def _supervisor_rpc() -> xmlrpc.client.ServerProxy:
+    return xmlrpc.client.ServerProxy("http://localhost/RPC2", transport=_UnixTransport())
+
+
+def supervisor_state(name: str) -> str:
+    try:
+        for info in _supervisor_rpc().supervisor.getAllProcessInfo():
+            if info.get("name") == name:
+                return str(info.get("statename") or "UNKNOWN")
+    except (OSError, xmlrpc.client.Error) as exc:
+        raise SupervisorError(f"无法连接 supervisor：{exc}") from exc
+    raise SupervisorError(f"supervisor 中没有名为 {name} 的进程")
+
+
+def supervisor_action(name: str, action: str) -> None:
+    rpc = _supervisor_rpc().supervisor
+    try:
+        if action == "stop":
+            rpc.stopProcess(name, True)
+        else:
+            rpc.startProcess(name, True)
+    except xmlrpc.client.Fault as exc:
+        raise SupervisorError(str(exc.faultString)) from exc
+    except (OSError, xmlrpc.client.Error) as exc:
+        raise SupervisorError(f"无法连接 supervisor：{exc}") from exc
+
+
+async def service_state(name: str) -> str | None:
+    """进程状态；控制通道不可用时返回 None。"""
+    try:
+        return await asyncio.to_thread(supervisor_state, name)
+    except SupervisorError:
+        return None
+
+
+async def service_running(name: str) -> bool | None:
+    state = await service_state(name)
+    if state is None:
+        return None
+    return state not in {"STOPPED", "EXITED", "FATAL"}
+
+
+async def service_control(name: str, action: str) -> None:
+    await asyncio.to_thread(supervisor_action, name, action)
+

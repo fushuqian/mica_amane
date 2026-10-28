@@ -45,6 +45,16 @@
             <p class="hint">开启后 amane 经容器内 mihomo 出网（http://127.0.0.1:7890）。</p>
           </div>
 
+          <div class="svc-section">
+            <div class="svc-label"><span>Token</span></div>
+            <div class="token-row">
+              <code id="token-value">读取中…</code>
+              <button id="token-reveal" class="btn small" type="button">显示</button>
+              <button id="token-copy" class="btn small" type="button">复制</button>
+            </div>
+            <p class="hint">amane 的 API Token，登入 amane 或接第三方工具时使用；默认打码，点「显示」查看明文。</p>
+          </div>
+
           <div class="svc-footer">
             <a id="link-amane" class="btn primary" target="_blank" rel="noopener">进入 amane</a>
           </div>
@@ -57,12 +67,17 @@
             <span class="dot" id="dot-mihomo"></span>
             <h2>mihomo</h2>
           </div>
-          <button class="svc-toggle" type="button" aria-expanded="true"
-                  aria-controls="body-mihomo" aria-label="展开或收起 mihomo">▾</button>
+          <div class="svc-actions">
+            <button id="mihomo-switch" class="switch" role="switch" aria-checked="false"
+                    aria-label="mihomo 服务"><span></span></button>
+            <button class="svc-toggle" type="button" aria-expanded="true"
+                    aria-controls="body-mihomo" aria-label="展开或收起 mihomo">▾</button>
+          </div>
         </div>
 
         <div class="svc-body" id="body-mihomo">
           <p class="svc-meta"><span id="state-mihomo">检测中…</span></p>
+          <p class="hint">关闭开关会停止 mihomo 内核，同时关闭 amane 的出网代理。</p>
 
           <div class="svc-section">
             <div class="svc-label"><span>模式</span></div>
