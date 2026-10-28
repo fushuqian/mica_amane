@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import os
 import subprocess
@@ -401,6 +402,37 @@ class YamlBody(BaseModel):
     content: str
 
 
+async def _apply_mihomo_config() -> None:
+    """热加载配置；mihomo 不可达时重启内核再试一次，仍失败抛出带原因的 502。"""
+    last = ""
+    for attempt in range(2):
+        try:
+            resp = await c.apply_config_file(str(store.MIHOMO_YAML))
+            if resp.status_code < 400:
+                return
+            last = f"热加载被拒绝：{_json(resp)}"
+        except httpx.HTTPError as exc:
+            last = f"mihomo 不可达（{exc}）"
+        if attempt == 1:
+            break
+        try:
+            await c.service_control("mihomo", "restart")
+        except c.SupervisorError as exc:
+            raise HTTPException(
+                502, f"配置已保存，但 mihomo 未运行且重启失败：{exc}"
+            ) from exc
+        for _ in range(20):
+            await asyncio.sleep(0.5)
+            try:
+                await c.get_clash("/version", timeout=2.0)
+                break
+            except httpx.HTTPError:
+                continue
+    raise HTTPException(
+        502, f"配置已保存，但{last}。请查看容器日志里 mihomo 的报错"
+    )
+
+
 @app.post("/api/mihomo/yaml")
 async def save_yaml(body: YamlBody):
     try:
@@ -409,17 +441,7 @@ async def save_yaml(body: YamlBody):
         raise HTTPException(400, str(exc)) from exc
 
     store.save(normalized)
-
-    try:
-        resp = await c.apply_config_file(str(store.MIHOMO_YAML))
-    except httpx.HTTPError as exc:
-        raise HTTPException(
-            502, f"配置已保存，但热加载失败（mihomo 不可达）：{exc}"
-        ) from exc
-    if resp.status_code >= 400:
-        raise HTTPException(
-            resp.status_code, f"配置已保存，但热加载被拒绝：{_json(resp)}"
-        )
+    await _apply_mihomo_config()
     return {"ok": True, "path": str(store.MIHOMO_YAML)}
 
 
@@ -444,17 +466,7 @@ async def import_subscription(body: SubBody):
         raise HTTPException(400, f"订阅内容无效：{exc}") from exc
 
     store.save(normalized)
-
-    try:
-        resp = await c.apply_config_file(str(store.MIHOMO_YAML))
-    except httpx.HTTPError as exc:
-        raise HTTPException(
-            502, f"订阅已保存，但热加载失败（mihomo 不可达）：{exc}"
-        ) from exc
-    if resp.status_code >= 400:
-        raise HTTPException(
-            resp.status_code, f"订阅已保存，但热加载被拒绝：{_json(resp)}"
-        )
+    await _apply_mihomo_config()
     return {"ok": True, "path": str(store.MIHOMO_YAML)}
 
 
