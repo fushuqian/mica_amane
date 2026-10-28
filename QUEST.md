@@ -11,6 +11,7 @@
 | Q-007 | 一键部署：`deploy.sh` 自动生成 `.env`、随机密钥、建目录、可选代理构建、启动并等待健康 | 已完成 | 高 | 2026-10-28 |
 | Q-008 | mihomo 卡片加服务开关（关闭即停内核并同步关闭 amane 出网代理、状态跨重启保持）；amane 卡片直接显示 Token 并提供复制 | 已完成 | 高 | 2026-10-28 |
 | Q-009 | 配置页更新功能：程序本体与 mihomo 从 GitHub 一键更新，amane 随镜像更新 | 已完成 | 高 | 2026-10-28 |
+| Q-010 | 镜像自动发布：GitHub Actions 在推送 master 时构建 `linux/amd64` 并推送 `kenzong/mica-amane:latest` 与 commit tag | 已完成 | 中 | 2026-10-28 |
 
 ## 部署信息
 
