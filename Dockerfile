@@ -8,6 +8,15 @@ FROM ghcr.io/metacubex/metacubexd-server:latest AS mcx
 # amane 运行目录（含 uv 虚拟环境与前端产物）
 FROM ghcr.io/sqzw-x/amane:latest AS amane
 
+# 离线可用的 geo 数据（mihomo 缺 MMDB 会直接退出）
+FROM alpine:3 AS geo
+ARG GEO_BASE="https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release"
+RUN apk add --no-cache curl \
+    && mkdir -p /geo \
+    && curl -fsSL --retry 3 --retry-delay 2 "$GEO_BASE/geoip.dat" -o /geo/geoip.dat \
+    && curl -fsSL --retry 3 --retry-delay 2 "$GEO_BASE/country.mmdb" -o /geo/geoip.metadb \
+    && curl -fsSL --retry 3 --retry-delay 2 "$GEO_BASE/geosite.dat" -o /geo/GeoSite.dat
+
 FROM python:3.14-slim
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -30,6 +39,7 @@ RUN groupadd -g 1000 appuser \
 
 COPY --from=mcx /usr/local/bin/mihomo /usr/local/bin/mihomo
 COPY --from=amane /app /app
+COPY --from=geo /geo /opt/mihomo-geo
 
 # 配置页使用独立 venv，避免污染 amane 的依赖
 COPY console/requirements.txt /opt/console/requirements.txt

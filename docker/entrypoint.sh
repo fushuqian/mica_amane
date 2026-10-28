@@ -18,6 +18,13 @@ for f in geoip.dat geoip.metadb GeoSite.dat; do
     fi
 done
 
+# 镜像内置 geo 数据兜底：无外网时 mihomo 无法下载 MMDB，会直接退出
+for f in geoip.dat geoip.metadb GeoSite.dat; do
+    if [ ! -f "/data/mihomo/$f" ] && [ -f "/opt/mihomo-geo/$f" ]; then
+        cp "/opt/mihomo-geo/$f" "/data/mihomo/$f"
+    fi
+done
+
 # 首次启动没有配置时生成最小可用配置，保证 mihomo 能起来
 if [ ! -f /data/mihomo/config.yaml ]; then
     cat > /data/mihomo/config.yaml <<EOF
