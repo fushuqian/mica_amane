@@ -2,6 +2,18 @@
 
 ## 2026-10-28
 
+### 更新功能
+
+- 配置页新增「更新」卡片：检查 GitHub 最新版本，程序本体与 mihomo 可一键更新；amane 显示「随镜像更新」。
+- 程序本体走源码热更新：下载本仓库最新提交的 `console/` 到 `/data/app/console`，装齐依赖后写 `.ready` 标记并自动重启配置页（前端轮询 `/healthz` 后刷新）；失败自动回滚到旧目录。
+- mihomo 走二进制替换：下载官方 release 的 `mihomo-linux-amd64-<tag>.gz`，解压校验版本后写入 `/data/mihomo/bin/mihomo`，重启内核生效；镜像内置二进制不动，删掉覆盖文件即回退。
+- supervisor 配置改为启动脚本（`start-console.sh` / `start-mihomo.sh`），优先使用 `/data` 下的更新版本，否则回退镜像内置版本；`/opt/console` 与 venv 归 appuser，便于安装新依赖。
+- 新增接口：`GET /api/updates`、`POST /api/updates/apply`（`panel` / `mihomo` / `amane`）。
+- GitHub 访问支持代理：先试 `UPDATE_PROXY`，再试容器内 `127.0.0.1:7890`，最后直连；可选 `GITHUB_TOKEN` 提高 API 限额。
+- 验证：容器内实测 mihomo v1.19.27 → v1.19.33（下载、解压、`-v` 校验、重启、`/api/status` 版本同步）；`/api/updates` 正确比对三方版本并回报上游错误。
+
+### mihomo 开关与 Token
+
 - 首页 mihomo 卡片新增服务开关：关闭后停止 mihomo 内核，同时把 amane 出网代理清空；开启只恢复内核，不自动重新挂代理。
 - 启停通过 supervisor XML-RPC 完成：supervisord 新增 `[unix_http_server]`（`/run/supervisor.sock`，chown appuser、chmod 0660）与 `[rpcinterface:supervisor]`；配置页以 appuser 身份调用，不需要额外权限。
 - 关闭状态写入 `/data/mihomo/service.json`；容器重启后配置页启动时检测到「已关闭」会再次停掉被 supervisor 自动拉起的 mihomo。

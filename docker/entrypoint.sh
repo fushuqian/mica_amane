@@ -3,7 +3,7 @@ set -eu
 
 : "${CLASH_SECRET:?CLASH_SECRET 未设置，请参考 .env.example}"
 
-mkdir -p /data/amane /data/mihomo
+mkdir -p /data/amane /data/mihomo /data/mihomo/bin /data/app /data/update
 
 # 一次性从旧的 metacubexd 数据目录迁移配置、屏蔽名单与 geo 数据
 if [ ! -f /data/mihomo/config.yaml ] && [ -f /data/metacubexd/console/mihomo.yaml ]; then

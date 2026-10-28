@@ -39,12 +39,13 @@ RUN python -m venv /opt/console/.venv \
         -r /opt/console/requirements.txt
 
 COPY console /opt/console
+COPY docker/start-console.sh docker/start-mihomo.sh /usr/local/bin/
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh \
+RUN chmod +x /entrypoint.sh /usr/local/bin/start-console.sh /usr/local/bin/start-mihomo.sh \
     && mkdir -p /data \
-    && chown -R appuser:appuser /data
+    && chown -R appuser:appuser /data /opt/console
 
 ENV PATH="/app/.venv/bin:/opt/console/.venv/bin:${PATH}"
 

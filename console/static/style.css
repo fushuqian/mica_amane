@@ -145,6 +145,33 @@ main { padding: 20px 24px 60px; max-width: 900px; margin: 0 auto; }
 
 .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
+/* ---------------- 更新 ---------------- */
+
+#updates-card { margin-top: 14px; }
+
+.update-row {
+  display: grid;
+  grid-template-columns: 88px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.update-row:last-of-type { border-bottom: none; }
+.update-name { color: var(--muted); }
+.update-ver { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.update-ver code {
+  background: #0f141b;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.update-ver i { color: var(--muted); font-style: normal; }
+.update-note { color: var(--muted); font-size: 12px; }
+
 /* ---------------- 开关 ---------------- */
 
 .switch {

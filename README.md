@@ -107,6 +107,8 @@ NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)�
 | `BIND_ADDR` | 端口绑定地址，公网反代模式改 `127.0.0.1` | 否 |
 | `AMANE_PORT` / `PANEL_PORT` | 宿主机端口，默认 `8000` / `8088` | 否 |
 | `MEDIA_DIR` | 宿主机媒体目录，默认 `./media` | 否 |
+| `UPDATE_PROXY` | 配置页检查/下载 GitHub 更新时走的代理，留空则先试容器内 `127.0.0.1:7890`、再直连 | 否 |
+| `GITHUB_TOKEN` | 可选，提高 GitHub API 限额（60 次/小时 → 5000 次/小时） | 否 |
 
 ---
 
@@ -136,6 +138,10 @@ NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)�
 - mihomo 模式切换（规则 / 全局 / 直连）
 - 当前节点切换、延迟测速、节点屏蔽
 - 订阅导入（写入 `config.yaml` 并热加载，重启依然生效）
+- 更新检查与一键更新：
+  - **程序本体**：从 GitHub 仓库下载最新提交的 `console/` 源码，热替换到 `/data/app/console` 后自动重启配置页
+  - **mihomo**：从 GitHub Release 下载最新 `mihomo-linux-amd64` 内核，装到 `/data/mihomo/bin` 并重启内核（镜像内置版本不动，可随时删掉覆盖版本回退）
+  - **amane**：上游只提供 CLI 二进制和 Docker 镜像，服务端无法单独热更，需随镜像更新
 
 > 本项目不再内置 metacubexd。实时连接列表、请求日志、规则命中需要看日志：
 > `docker compose logs -f stack`。
@@ -149,21 +155,28 @@ NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)�
 ```
 /data
 ├── amane/                 # amane 数据库、token、插件
+├── app/console/           # 配置页热更新版本（存在时优先于镜像内置版本）
+├── update/state.json      # 已安装的热更新版本记录
 └── mihomo/
     ├── config.yaml        # 唯一配置，订阅写入这里
     ├── blocked_nodes.json # 节点屏蔽名单
     ├── credentials.json   # 登录凭据（PBKDF2 哈希，无明文）
     ├── onboarded.json     # 向导完成标记
     ├── service.json       # mihomo 期望运行状态（关闭开关后为 false）
+    ├── bin/mihomo         # 配置页更新的内核（存在时优先于镜像内置版本）
     └── geoip.dat / GeoSite.dat / geoip.metadb
 ```
 
-升级镜像（保留数据）：
+升级方式：
 
+1. 配置页「更新」卡片（推荐）：程序本体与 mihomo 直接点「更新」，无需命令行
+2. 整体升级（含 amane）：
 ```bash
 docker compose pull
 docker compose up -d
 ```
+
+回退：删掉 `/data/app/console`（程序本体）或 `/data/mihomo/bin/mihomo`（内核）后重启容器，即回到镜像内置版本。
 
 手动运行的容器：拉新镜像后删掉旧容器，用同样的挂载和参数重新运行即可，`/data` 里的数据不会动。
 

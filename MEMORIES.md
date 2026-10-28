@@ -18,3 +18,6 @@
 - supervisord 要在容器内被普通用户控制，必须显式配 `[rpcinterface:supervisor]`，并给 `[unix_http_server]` 加 `chown=<运行用户>` + `chmod=0660`；只配 `file` 时 socket 归 root，appuser 连不上会表现为「控制通道不可用」。
 - 配置页里通过 XML-RPC 走 Unix socket，需要用自定义 `http.client.HTTPConnection` 覆盖 `connect()` 走 `AF_UNIX`；Windows 自带 Python 的 `socket` 没有 `AF_UNIX`，本地验证只能在 Linux 容器里跑。
 - `supervisor.stopProcess(name, wait=True)` 停掉的进程不会被 `autorestart` 拉起；但容器重启会重新 autostart，所以「已关闭」状态要落盘（`service.json`），在配置页启动时再停一次。
+- httpx 0.28 起不再接受请求级 `proxy=` 参数（报 `unexpected keyword argument 'proxy'`），代理必须在 `AsyncClient(...)` 构造时传入，要按代理逐个新建客户端。
+- 本仓库默认分支是 `master`，调 GitHub API 取最新提交不能写死 `/commits/main`（会 422），用 `/commits?per_page=1`。
+- 配置页自更新：supervisord 用启动脚本判断 `/data/app/console/.ready` 决定加载路径；`/opt/console` 与其 venv 必须 chown 给 appuser，否则新依赖装不进去；替换前把旧目录改名备份，失败可回滚。

@@ -145,6 +145,9 @@ def supervisor_action(name: str, action: str) -> None:
     try:
         if action == "stop":
             rpc.stopProcess(name, True)
+        elif action == "restart":
+            rpc.stopProcess(name, True)
+            rpc.startProcess(name, True)
         else:
             rpc.startProcess(name, True)
     except xmlrpc.client.Fault as exc:

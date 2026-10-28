@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import os
 import secrets as pysecrets
@@ -14,6 +15,7 @@ from pydantic import BaseModel
 
 from . import clients as c
 from . import config_store as store
+from . import updater
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
@@ -454,6 +456,49 @@ async def import_subscription(body: SubBody):
             resp.status_code, f"订阅已保存，但热加载被拒绝：{_json(resp)}"
         )
     return {"ok": True, "path": str(store.MIHOMO_YAML)}
+
+
+@app.get("/api/updates")
+async def updates_check():
+    try:
+        return await updater.check_updates()
+    except RuntimeError as exc:
+        raise HTTPException(502, f"检查更新失败：{exc}") from exc
+
+
+class UpdateBody(BaseModel):
+    target: str
+
+
+@app.post("/api/updates/apply")
+async def updates_apply(body: UpdateBody):
+    target = body.target.strip().lower()
+    if target == "mihomo":
+        try:
+            return await updater.apply_mihomo()
+        except (RuntimeError, c.SupervisorError) as exc:
+            raise HTTPException(502, f"更新 mihomo 失败：{exc}") from exc
+    if target == "panel":
+        try:
+            result = await updater.apply_panel()
+        except RuntimeError as exc:
+            raise HTTPException(502, f"更新程序本体失败：{exc}") from exc
+        asyncio.create_task(_restart_self())
+        return result
+    if target == "amane":
+        raise HTTPException(
+            400, "amane 服务端只能随镜像更新：docker compose pull && docker compose up -d"
+        )
+    raise HTTPException(400, "target 只能是 panel / mihomo / amane")
+
+
+async def _restart_self() -> None:
+    """等响应发出去后再重启配置页进程，前端随后轮询 /healthz 恢复。"""
+    await asyncio.sleep(1.5)
+    try:
+        await c.service_control("console", "restart")
+    except c.SupervisorError:
+        pass
 
 
 @app.exception_handler(HTTPException)
