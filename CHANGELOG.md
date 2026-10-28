@@ -14,6 +14,7 @@
 - 新增 GitHub Actions 工作流 `.github/workflows/publish.yml`：推送 `master` 时自动构建 `linux/amd64` 镜像并发布到 `kenzong/mica-amane:latest` 与 commit 标签（本机直推 Docker Hub 大层易超时，改由 CI 发布）。
 - 部署改为 compose 拉取已发布镜像：`compose.yaml` 默认 `image: kenzong/mica-amane:latest`，源码构建用 `compose.yaml + compose.build.yaml` 覆盖；`deploy.sh` 默认 `docker compose pull && up -d`，需要本地构建加 `--build`。
 - `publish.yml` 增加每周一 03:00 UTC 定时构建，用于跟随上游 amane 镜像更新。
+- 修复：配置页「进入 amane」原先硬编码跳 `:8000`，宿主端口不同时打不开。改为读取 `AMANE_PUBLIC_PORT`（compose 自动取自 `AMANE_PORT`），跳转地址与端口标签按实际端口生成；公网反代仍可用 `PUBLIC_AMANE_URL` 覆盖。
 - 修复：全新部署且宿主机无外网时 mihomo 启动即 FATAL（`can't download MMDB`，遇到 `GEOIP` 规则直接退出）。镜像内置 `geoip.dat` / `geoip.metadb` / `GeoSite.dat`（构建时从 meta-rules-dat 下载），entrypoint 在数据目录缺文件时自动补齐。
 - 修复：订阅导入/保存 YAML 时若 mihomo 不可达，自动重启内核后重试一次，并把真实原因回显到界面。
 - 验证：容器内实测 mihomo v1.19.27 → v1.19.33（下载、解压、`-v` 校验、重启、`/api/status` 版本同步）；程序本体热更新后配置页 2 秒内自动恢复，`/api/updates` 显示当前提交与最新提交一致；`/api/updates` 正确比对三方版本并回报上游错误。

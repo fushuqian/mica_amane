@@ -4,6 +4,9 @@ services:
     container_name: amane-stack
     restart: unless-stopped
     env_file: .env
+    environment:
+      # 配置页「进入 amane」按钮用，与下面 amane 端口映射的宿主端口保持一致
+      AMANE_PUBLIC_PORT: "${AMANE_PORT:-8000}"
     ports:
       - "${BIND_ADDR:-0.0.0.0}:${AMANE_PORT:-8000}:8000"   # amane Web/API
       - "${BIND_ADDR:-0.0.0.0}:${PANEL_PORT:-8088}:8088"  # 配置页

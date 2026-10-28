@@ -103,6 +103,7 @@ NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)�
 | `CONSOLE_PASSWORD` | 留空 = 首次免密进向导；设置后以环境变量为准 | 否 |
 | `AMANE_TOKEN` | amane Token，留空由程序生成 | 否 |
 | `AMANE_SAFE_DIRS` | amane 可访问的媒体目录，默认 `/media` | 是 |
+| `AMANE_PUBLIC_PORT` | amane 对外端口，用于配置页「进入 amane」跳转，默认 8000；用 compose 时自动跟随 `AMANE_PORT` | 否 |
 | `SUB_USER_AGENT` | 订阅下载 UA，默认 `mihomo.party/v2.0.4 (clash.meta)` | 否 |
 | `BIND_ADDR` | 端口绑定地址，公网反代模式改 `127.0.0.1` | 否 |
 | `AMANE_PORT` / `PANEL_PORT` | 宿主机端口，默认 `8000` / `8088` | 否 |

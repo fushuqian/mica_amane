@@ -103,7 +103,11 @@ def _json(resp: httpx.Response):
 
 
 def _public_links() -> dict[str, str]:
-    return {"amane": os.environ.get("PUBLIC_AMANE_URL", "")}
+    # amane 的宿主端口由 compose 的 AMANE_PUBLIC_PORT 传入，前端据此拼跳转地址
+    return {
+        "amane": os.environ.get("PUBLIC_AMANE_URL", ""),
+        "amane_port": os.environ.get("AMANE_PUBLIC_PORT", "") or "8000",
+    }
 
 
 @app.get("/api/status")

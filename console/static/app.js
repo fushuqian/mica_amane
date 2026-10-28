@@ -52,9 +52,15 @@ function escapeHtml(value) {
 function updateLinks(links = {}) {
   const host = location.hostname;
   const proto = location.protocol;
-  const amane = links.amane || `${proto}//${host}:8000`;
+  const port = String(links.amane_port || '8000');
+  const isDefaultPort =
+    (proto === 'https:' && port === '443') || (proto === 'http:' && port === '80');
+  const amane =
+    links.amane || (isDefaultPort ? `${proto}//${host}` : `${proto}//${host}:${port}`);
   $('#link-amane-top').href = amane;
   $('#link-amane').href = amane;
+  const portLabel = $('#port-amane');
+  if (portLabel) portLabel.textContent = port;
 }
 
 /* ---------------- 状态 ---------------- */
