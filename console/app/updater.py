@@ -38,12 +38,14 @@ UA = "mica-amane/1.0 (+https://github.com/fushuqian/mica_amane)"
 
 
 def _proxies() -> list[str | None]:
-    """更新下载走 mihomo 本机端口，失败再直连。"""
+    """更新下载走 mihomo 本机端口，失败再直连；重复的代理只试一次。"""
     items: list[str | None] = []
     env_proxy = os.environ.get("UPDATE_PROXY", "").strip()
     if env_proxy:
         items.append(env_proxy)
-    items.extend(["http://127.0.0.1:7890", None])
+    for candidate in ("http://127.0.0.1:7890", None):
+        if candidate not in items:
+            items.append(candidate)
     return items
 
 
@@ -313,7 +315,10 @@ async def apply_panel() -> dict:
     backup = parent / "console.old"
     try:
         _extract_console(raw, staging)
-        await asyncio.to_thread(_install_requirements, staging)
+        if _requirements_hash(staging / "requirements.txt") != _requirements_hash(
+            PANEL_DIR / "requirements.txt"
+        ):
+            await asyncio.to_thread(_install_requirements, staging)
 
         if backup.exists():
             shutil.rmtree(backup)

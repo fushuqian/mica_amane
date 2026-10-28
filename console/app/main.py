@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import asyncio
 import base64
 import os
+import subprocess
 import secrets as pysecrets
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -483,7 +483,7 @@ async def updates_apply(body: UpdateBody):
             result = await updater.apply_panel()
         except RuntimeError as exc:
             raise HTTPException(502, f"更新程序本体失败：{exc}") from exc
-        asyncio.create_task(_restart_self())
+        _schedule_console_restart()
         return result
     if target == "amane":
         raise HTTPException(
@@ -492,13 +492,18 @@ async def updates_apply(body: UpdateBody):
     raise HTTPException(400, "target 只能是 panel / mihomo / amane")
 
 
-async def _restart_self() -> None:
-    """等响应发出去后再重启配置页进程，前端随后轮询 /healthz 恢复。"""
-    await asyncio.sleep(1.5)
-    try:
-        await c.service_control("console", "restart")
-    except c.SupervisorError:
-        pass
+def _schedule_console_restart() -> None:
+    """用脱离的 supervisorctl 重启配置页：直接调 stopProcess 会连调用者一起被杀。"""
+    subprocess.Popen(
+        [
+            "/bin/sh",
+            "-c",
+            "sleep 1; /usr/bin/supervisorctl -c /etc/supervisor/supervisord.conf restart console",
+        ],
+        start_new_session=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
 
 @app.exception_handler(HTTPException)

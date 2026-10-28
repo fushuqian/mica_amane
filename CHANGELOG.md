@@ -10,7 +10,8 @@
 - supervisor 配置改为启动脚本（`start-console.sh` / `start-mihomo.sh`），优先使用 `/data` 下的更新版本，否则回退镜像内置版本；`/opt/console` 与 venv 归 appuser，便于安装新依赖。
 - 新增接口：`GET /api/updates`、`POST /api/updates/apply`（`panel` / `mihomo` / `amane`）。
 - GitHub 访问支持代理：先试 `UPDATE_PROXY`，再试容器内 `127.0.0.1:7890`，最后直连；可选 `GITHUB_TOKEN` 提高 API 限额。
-- 验证：容器内实测 mihomo v1.19.27 → v1.19.33（下载、解压、`-v` 校验、重启、`/api/status` 版本同步）；`/api/updates` 正确比对三方版本并回报上游错误。
+- 修复：热更新完成后配置页没能被拉起来（重启请求把自身进程杀掉，后续启动调用发不出去），改为脱离进程执行 `supervisorctl restart console`；顺带补上 `[supervisorctl]` 段与重复代理去重。
+- 验证：容器内实测 mihomo v1.19.27 → v1.19.33（下载、解压、`-v` 校验、重启、`/api/status` 版本同步）；程序本体热更新后配置页 2 秒内自动恢复，`/api/updates` 显示当前提交与最新提交一致；`/api/updates` 正确比对三方版本并回报上游错误。
 
 ### mihomo 开关与 Token
 
