@@ -2,7 +2,7 @@
 
 ## 2026-10-29
 
-- NAS 纯镜像版模板 `compose.pull.yaml` 对齐实际部署：容器名 `mica-amane`、配置页 `9950:8088`、amane `9951:8000`，`AMANE_PUBLIC_PORT` 跟随为 `9951`；`AMANE_SAFE_DIRS` 与卷挂载增加 `/downloads`，媒体路径保持占位；README 步骤同步。
+- NAS 纯镜像版模板 `compose.pull.yaml` 对齐实际部署：容器名 `mica-amane`、配置页 `9950:8088`、amane `9951:8000`，`AMANE_PUBLIC_PORT` 保持 amane 默认对外端口 `8000`（宿主端口不同则在配置页卡片里改端口）；`AMANE_SAFE_DIRS` 与卷挂载增加 `/downloads`，媒体路径保持占位；README 步骤同步。
 - 取消手工配置 `CLASH_SECRET`：非 ASCII 的 secret（如 NAS 上照抄模板的「请替换为随机长串」）会让 `Authorization` 头编码失败，订阅导入报 `500 Internal Server Error`。现在 entrypoint 首次启动用 `python3 secrets.token_hex(32)` 生成密钥写入 `/data/mihomo/clash_secret`（0600），之后每次启动复用并同步覆盖 `config.yaml` 的 `secret` 行，内核与配置页始终一致；界面不展示密钥。
 - `config_store.normalize()` 改为强制写入密钥（订阅里自带的 `secret` 会被覆盖），避免导入订阅后 401。
 - 同步移除 `CLASH_SECRET` 的强制校验与相关提示：`.env.example`、`compose.nas.yaml`、`compose.pull.yaml`、`deploy.sh`（含 `gen_secret`）、README、IMPORTANT；向导环境自检去掉「CLASH_SECRET 是否为默认值」一项，`/api/setup/state` 不再返回 `clash_secret_default`。

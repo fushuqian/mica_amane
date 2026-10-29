@@ -16,8 +16,8 @@ services:
       # 留空：首次打开配置页走免密向导，由向导设置账号密码
       CONSOLE_PASSWORD: ""
       AMANE_SAFE_DIRS: /media,/downloads
-      # 与下面 amane 端口映射的宿主端口保持一致（配置页跳转用）
-      AMANE_PUBLIC_PORT: "9951"
+      # amane 服务的对外端口（默认 8000）；宿主端口若映射到别处，在配置页 amane 卡片里改端口
+      AMANE_PUBLIC_PORT: "8000"
       SUB_USER_AGENT: "mihomo.party/v2.0.4 (clash.meta)"
     ports:
       - "9950:8088"   # 配置页

@@ -39,7 +39,7 @@
 ```yaml
 - /vol1/1000/media:/media             # 换成 NAS 真实媒体目录
 - /vol1/1000/downloads:/downloads     # 换成 NAS 真实下载目录（可删）
-- "9951:8000"                         # amane 端口，被占用就换（同步改 AMANE_PUBLIC_PORT）
+- "9951:8000"                         # amane 端口，被占用就换
 - "9950:8088"                         # 配置页端口，被占用就换
 ```
 
