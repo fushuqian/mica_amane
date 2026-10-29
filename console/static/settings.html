@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>设置 · Mica Amane</title>
+  <link rel="stylesheet" href="/static/mica-ui.css">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/theme.js"></script>
+</head>
+<body>
+  <div class="mh-scene" aria-hidden="true">
+    <div class="mh-blob mh-blob--1"></div>
+    <div class="mh-blob mh-blob--2"></div>
+    <div class="mh-blob mh-blob--3"></div>
+  </div>
+
+  <header class="mh-topbar mh-glass">
+    <a class="mh-brand" href="/">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <rect x="3" y="7" width="17" height="5" rx="2.5" style="fill: var(--mh-accent); opacity: .34"/>
+        <rect x="6" y="13" width="17" height="5" rx="2.5" style="fill: var(--mh-accent); opacity: .62"/>
+        <rect x="9" y="19" width="17" height="5" rx="2.5" style="fill: var(--mh-accent)"/>
+      </svg>
+      <span class="mh-brand__name">
+        <b>Mica Amane</b>
+        <span>amane · mihomo</span>
+      </span>
+    </a>
+    <nav class="mh-nav">
+      <a href="/">控制台</a>
+      <a href="/updates">更新</a>
+    </nav>
+    <div class="mh-spacer"></div>
+    <div class="account">
+      <button class="account-btn" id="account-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="账号菜单">
+        <img class="account-avatar" id="account-avatar" alt="" hidden>
+        <span class="account-initial" id="account-initial">M</span>
+      </button>
+      <div class="account-menu" id="account-menu" role="menu" hidden>
+        <a class="account-item" href="/settings" role="menuitem">设置</a>
+        <button class="account-item" id="account-theme" type="button" role="menuitem" aria-haspopup="true" aria-expanded="false">
+          主题<span class="account-now" id="account-theme-now">迷雾</span>
+        </button>
+        <div class="account-sub" id="account-sub" role="menu" hidden>
+          <button class="account-item" type="button" role="menuitemradio" data-theme-choice="light">迷雾</button>
+          <button class="account-item" type="button" role="menuitemradio" data-theme-choice="dark">深沉</button>
+        </div>
+        <a class="account-item is-danger" href="/logout" role="menuitem">退出登录</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="mh-container">
+    <section class="updates-head">
+      <p class="mh-eyebrow">ACCOUNT · SETTINGS</p>
+      <h1 class="mh-display">设置</h1>
+    </section>
+
+    <div class="mh-grid">
+      <section class="mh-card">
+        <div class="mh-card__head">
+          <div class="mh-icon mh-tone-a">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8.5" r="4"/>
+              <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+            </svg>
+          </div>
+          <div class="svc-title">
+            <h2 class="mh-h3">头像</h2>
+            <div class="mh-meta mh-mono">AVATAR</div>
+          </div>
+        </div>
+        <p class="mh-card__desc">上传一张图片作为头像，顶栏按钮会使用它。</p>
+
+        <div class="avatar-row">
+          <div class="avatar-preview">
+            <img id="avatar-img" alt="头像预览" hidden>
+            <span id="avatar-initial">M</span>
+          </div>
+          <div class="avatar-actions">
+            <input id="avatar-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+            <label class="mh-btn mh-btn--soft" for="avatar-file">选择图片</label>
+            <button id="avatar-save" class="mh-btn mh-btn--accent" type="button" disabled>保存头像</button>
+          </div>
+        </div>
+        <p class="mh-meta">支持 PNG / JPEG / WEBP / GIF，不超过 512KB。</p>
+      </section>
+
+      <section class="mh-card">
+        <div class="mh-card__head">
+          <div class="mh-icon mh-tone-b">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="4" y="10" width="16" height="10" rx="3"/>
+              <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+            </svg>
+          </div>
+          <div class="svc-title">
+            <h2 class="mh-h3">登录账号</h2>
+            <div class="mh-meta mh-mono">ACCOUNT</div>
+          </div>
+        </div>
+        <p class="mh-card__desc">修改用户名或密码，保存后立即生效，当前登录状态不会中断。</p>
+
+        <form class="settings-form" id="account-form">
+          <label>用户名
+            <input id="acc-user" class="mh-input mh-input--boxed" type="text" autocomplete="username" required>
+          </label>
+          <label>当前密码
+            <input id="acc-current" class="mh-input mh-input--boxed" type="password" autocomplete="current-password" required>
+          </label>
+          <label>新密码
+            <input id="acc-pass" class="mh-input mh-input--boxed" type="password" autocomplete="new-password" placeholder="留空表示不修改">
+          </label>
+          <label>确认新密码
+            <input id="acc-pass2" class="mh-input mh-input--boxed" type="password" autocomplete="new-password" placeholder="再次输入新密码">
+          </label>
+          <button id="account-save" class="mh-btn mh-btn--accent" type="submit">保存账号</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <div class="mh-toast" id="mh-toast" role="status" aria-live="polite">
+    <span class="mh-toast__icon" id="mh-toast-icon">✓</span>
+    <span id="mh-toast-text"></span>
+  </div>
+
+  <script src="/static/account.js"></script>
+  <script src="/static/settings.js"></script>
+</body>
+</html>

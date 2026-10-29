@@ -2,6 +2,10 @@
 
 ## 2026-10-29
 
+- 顶栏精简：去掉 ONLINE 状态、amane 跳转、设置向导、刷新、退出按钮，右侧改为用户头像；点击头像弹出菜单：设置 / 主题（二级菜单：迷雾=亮色、深沉=暗色）/ 退出登录。
+- 新增设置页 `GET /settings`：可上传头像（PNG/JPEG/WEBP/GIF，≤512KB，存 `/data/mihomo/avatar`）与修改登录用户名/密码；改密码需验证当前密码，保存后当前会话不断开。
+- 新增接口 `GET/POST /api/avatar`、`GET/POST /api/settings/account`；顶栏头像由 `/api/avatar` 提供，无头像时回退为用户名首字母。
+- 主题切换仍写在 `localStorage['mica.theme']`，由 `theme.js` 的 `MicaTheme.set()` 驱动，与旧切换按钮共用同一存储键。
 - 新增登录页，替代浏览器 Basic 认证弹窗：`GET /login` 表单页、`POST /login` 校验后写入 7 天 HMAC 签名 cookie（`mica_session`，HttpOnly/SameSite=Lax），未登录的页面请求 303 跳登录页，`/api/*` 仍返回 401 JSON；Basic 认证保留给脚本与第三方工具。
 - 会话签名密钥持久化在 `/data/mihomo/session.key`（权限 600），容器重启后登录态不失效；新增 `/logout` 与顶栏「退出」。
 - 顶栏新增导航「控制台 / 更新」，「更新」拆成独立页面 `GET /updates`（`updates.html` + `updates.js`），首页不再有「更新」卡片；检查更新、逐项升级与说明都在更新页。

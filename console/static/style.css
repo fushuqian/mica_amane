@@ -368,6 +368,124 @@ select:focus { border-color: var(--mh-accent-line); background: var(--mh-surface
   padding: 9px 13px;
 }
 
+/* ---------- 账号菜单 ---------- */
+
+.account { position: relative; }
+.account-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--mh-line);
+  background: var(--mh-soft);
+  overflow: hidden;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: border-color .3s, background .3s, transform .3s var(--mh-ease);
+}
+.account-btn:hover {
+  border-color: var(--mh-accent-line);
+  background: var(--mh-hover);
+  transform: translateY(-1px);
+}
+.account-avatar { width: 100%; height: 100%; object-fit: cover; display: block; }
+.account-initial {
+  font-family: var(--mh-font-d);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--mh-accent-deep);
+}
+
+.account-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 80;
+  min-width: 176px;
+  padding: 8px;
+  display: grid;
+  gap: 2px;
+  border-radius: 16px;
+  border: 1px solid var(--mh-glass-border);
+  background: var(--mh-glass-solid);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--mh-shadow-hi);
+}
+.account-menu[hidden],
+.account-sub[hidden] { display: none; }
+
+.account-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--mh-text-2);
+  font-size: 13px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .25s, color .25s;
+}
+.account-item:hover { background: var(--mh-hover); color: var(--mh-text); }
+.account-item.is-danger:hover { background: var(--mh-warn-bg); color: var(--mh-warn-text); }
+.account-now { font-size: 11.5px; letter-spacing: .06em; color: var(--mh-text-3); }
+
+.account-sub {
+  display: grid;
+  gap: 2px;
+  margin: 2px 0 2px 8px;
+  padding-left: 10px;
+  border-left: 1px solid var(--mh-line);
+}
+.account-sub .account-item[aria-checked="true"] { color: var(--mh-accent-deep); font-weight: 600; }
+
+/* ---------- 设置页 ---------- */
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.avatar-preview {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1px solid var(--mh-line);
+  background: var(--mh-soft);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.avatar-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar-preview span {
+  font-family: var(--mh-font-d);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--mh-accent-deep);
+}
+.avatar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.avatar-actions .mh-btn { cursor: pointer; }
+
+.settings-form { display: grid; gap: 12px; margin-top: 16px; }
+.settings-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--mh-text-3);
+}
+.settings-form .mh-btn { margin-top: 4px; justify-self: start; }
+
 /* ---------- 向导 ---------- */
 
 .wizard-foot {
@@ -432,7 +550,6 @@ select:focus { border-color: var(--mh-accent-line); background: var(--mh-surface
 
 @media (max-width: 640px) {
   main { padding: 44px 0 44px; }
-  .topbar-extra { display: none; }
   .stage-wrap { padding: 12px; }
   .stage { max-height: 92vh; }
   .stage-body { padding: 16px; }

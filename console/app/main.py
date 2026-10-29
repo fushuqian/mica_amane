@@ -5,6 +5,7 @@ import base64
 import hashlib
 import hmac
 import os
+import re
 import subprocess
 import time
 import secrets as pysecrets
@@ -14,7 +15,7 @@ from urllib.parse import parse_qs, quote
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -149,6 +150,11 @@ async def index():
 @app.get("/updates")
 async def updates_page():
     return FileResponse(STATIC_DIR / "updates.html")
+
+
+@app.get("/settings")
+async def settings_page():
+    return FileResponse(STATIC_DIR / "settings.html")
 
 
 @app.get("/login")
@@ -318,6 +324,98 @@ async def setup_complete(body: CompleteBody | None = None):
         raise HTTPException(400, "请先设置管理员账号密码")
     store.mark_onboarded(source)
     return {"ok": True, "auth_source": source}
+
+
+AVATAR_PATH = store.CONSOLE_DIR / "avatar"
+
+
+def _image_type(data: bytes) -> str:
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if data.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if data.startswith(b"GIF87a") or data.startswith(b"GIF89a"):
+        return "image/gif"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return ""
+
+
+@app.get("/api/avatar")
+async def get_avatar():
+    try:
+        data = AVATAR_PATH.read_bytes()
+    except FileNotFoundError:
+        raise HTTPException(404, "还没有设置头像") from None
+    return Response(
+        content=data,
+        media_type=_image_type(data) or "application/octet-stream",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+class AvatarBody(BaseModel):
+    data: str
+
+
+@app.post("/api/avatar")
+async def set_avatar(body: AvatarBody):
+    matched = re.match(r"^data:image/[a-zA-Z0-9.+-]+;base64,(.+)$", body.data.strip(), re.S)
+    if not matched:
+        raise HTTPException(400, "图片数据格式不正确")
+    try:
+        data = base64.b64decode(matched.group(1), validate=True)
+    except Exception:  # noqa: BLE001
+        raise HTTPException(400, "图片解码失败") from None
+    if len(data) > 512 * 1024:
+        raise HTTPException(400, "图片不能超过 512KB")
+    if not _image_type(data):
+        raise HTTPException(400, "只支持 PNG / JPEG / WEBP / GIF")
+    AVATAR_PATH.write_bytes(data)
+    try:
+        AVATAR_PATH.chmod(0o644)
+    except OSError:
+        pass
+    return {"ok": True}
+
+
+class AccountBody(BaseModel):
+    current_password: str = ""
+    username: str = ""
+    password: str = ""
+
+
+@app.get("/api/settings/account")
+async def get_account():
+    creds = store.load_credentials() or {}
+    return {"username": creds.get("username") or CONSOLE_USER}
+
+
+@app.post("/api/settings/account")
+async def set_account(body: AccountBody):
+    source = _auth_source()
+    if source == "none":
+        raise HTTPException(400, "尚未启用登录，请先完成设置向导")
+
+    stored_user = (store.load_credentials() or {}).get("username") or CONSOLE_USER
+    if not _check_credentials(stored_user, body.current_password, source):
+        raise HTTPException(400, "当前密码不正确")
+
+    username = body.username.strip()
+    password = body.password
+    if len(username) < 2:
+        raise HTTPException(400, "用户名至少 2 个字符")
+    if password:
+        if len(password) < 8:
+            raise HTTPException(400, "新密码至少 8 位")
+        if password == username:
+            raise HTTPException(400, "密码不能与用户名相同")
+    else:
+        password = body.current_password
+
+    store.save_credentials(username, password)
+    store.mark_onboarded("file")
+    return {"ok": True, "username": username}
 
 
 @app.get("/api/amane/token")

@@ -66,8 +66,10 @@ function updateLinks(links = {}) {
     (proto === 'https:' && port === '443') || (proto === 'http:' && port === '80');
   const amane =
     links.amane || (isDefaultPort ? `${proto}//${host}` : `${proto}//${host}:${port}`);
-  $('#link-amane-top').href = amane;
-  $('#link-amane').href = amane;
+  const topLink = $('#link-amane-top');
+  if (topLink) topLink.href = amane;
+  const cardLink = $('#link-amane');
+  if (cardLink) cardLink.href = amane;
   const portLabel = $('#port-amane');
   if (portLabel) portLabel.textContent = port;
   const portInput = $('#amane-port-input');
@@ -584,9 +586,6 @@ function setupCards() {
 
 /* ---------------- 事件绑定 ---------------- */
 
-$('#refresh').addEventListener('click', () => {
-  refreshStatus();
-});
 $('#proxy-switch').addEventListener('click', toggleAmaneProxy);
 $('#mihomo-switch').addEventListener('click', toggleMihomoService);
 $('#token-reveal').addEventListener('click', toggleToken);
