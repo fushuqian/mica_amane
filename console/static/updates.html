@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>更新 · Mica Amane</title>
+  <link rel="stylesheet" href="/static/mica-ui.css">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/theme.js"></script>
+</head>
+<body>
+  <div class="mh-scene" aria-hidden="true">
+    <div class="mh-blob mh-blob--1"></div>
+    <div class="mh-blob mh-blob--2"></div>
+    <div class="mh-blob mh-blob--3"></div>
+  </div>
+
+  <header class="mh-topbar mh-glass">
+    <a class="mh-brand" href="/">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <rect x="3" y="7" width="17" height="5" rx="2.5" style="fill: var(--mh-accent); opacity: .34"/>
+        <rect x="6" y="13" width="17" height="5" rx="2.5" style="fill: var(--mh-accent); opacity: .62"/>
+        <rect x="9" y="19" width="17" height="5" rx="2.5" style="fill: var(--mh-accent)"/>
+      </svg>
+      <span class="mh-brand__name">
+        <b>Mica Amane</b>
+        <span>amane · mihomo</span>
+      </span>
+    </a>
+    <nav class="mh-nav">
+      <a href="/">控制台</a>
+      <a href="/updates" aria-current="page">更新</a>
+    </nav>
+    <div class="mh-spacer"></div>
+    <a href="/logout" class="mh-btn mh-btn--soft topbar-extra">退出</a>
+    <button class="mh-theme-toggle" data-theme-toggle type="button" aria-pressed="false" aria-label="切换主题">
+      <svg class="i-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/>
+      </svg>
+      <svg class="i-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 14.5A8.2 8.2 0 1 1 9.5 4a6.6 6.6 0 0 0 10.5 10.5Z"/>
+      </svg>
+    </button>
+  </header>
+
+  <main class="mh-container">
+    <section class="updates-head">
+      <p class="mh-eyebrow">VERSION · UPDATE</p>
+      <h1 class="mh-display">更新与升级</h1>
+    </section>
+
+    <section class="mh-glass mh-panel updates-panel">
+      <div class="updates-bar">
+        <div class="mh-label">组件版本</div>
+        <button id="updates-check" class="mh-btn mh-btn--accent" type="button">检查更新</button>
+      </div>
+      <div id="update-list"><p class="mh-meta">正在检查…</p></div>
+      <p class="mh-meta updates-note">程序本体与 mihomo 直接从 GitHub 更新；amane 服务端只能随镜像更新。下载走国外线路，慢时可能等几分钟。</p>
+    </section>
+  </main>
+
+  <div class="mh-toast" id="mh-toast" role="status" aria-live="polite">
+    <span class="mh-toast__icon" id="mh-toast-icon">✓</span>
+    <span id="mh-toast-text"></span>
+  </div>
+
+  <script src="/static/updates.js"></script>
+</body>
+</html>

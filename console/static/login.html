@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 · Mica Amane</title>
+  <link rel="stylesheet" href="/static/mica-ui.css">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/theme.js"></script>
+</head>
+<body>
+  <div class="mh-scene" aria-hidden="true">
+    <div class="mh-blob mh-blob--1"></div>
+    <div class="mh-blob mh-blob--2"></div>
+    <div class="mh-blob mh-blob--3"></div>
+  </div>
+
+  <main class="login-wrap">
+    <section class="mh-glass mh-panel login-panel">
+      <div class="login-brand">
+        <svg width="34" height="34" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+          <rect x="3" y="7" width="17" height="5" rx="2.5" style="fill: var(--mh-accent); opacity: .34"/>
+          <rect x="6" y="13" width="17" height="5" rx="2.5" style="fill: var(--mh-accent); opacity: .62"/>
+          <rect x="9" y="19" width="17" height="5" rx="2.5" style="fill: var(--mh-accent)"/>
+        </svg>
+        <span class="mh-brand__name">
+          <b>Mica Amane</b>
+          <span>amane · mihomo</span>
+        </span>
+      </div>
+
+      <p class="mh-eyebrow">CONTROL · SIGN IN</p>
+      <h1 class="login-title">进入控制台</h1>
+      <p class="mh-meta">请使用设置向导里创建的管理员账号登录。</p>
+
+      <form class="login-form" method="post" action="/login">
+        <input type="hidden" name="next" id="login-next" value="/">
+        <label>用户名
+          <input class="mh-input mh-input--boxed" type="text" name="username"
+                 autocomplete="username" required autofocus>
+        </label>
+        <label>密码
+          <input class="mh-input mh-input--boxed" type="password" name="password"
+                 autocomplete="current-password" required>
+        </label>
+        <button class="mh-btn mh-btn--accent" type="submit">登录</button>
+      </form>
+
+      <p class="login-error" id="login-error" hidden>用户名或密码不正确，请重试。</p>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const next = params.get('next') || '/';
+    document.getElementById('login-next').value = next.startsWith('/') ? next : '/';
+    if (params.get('error')) document.getElementById('login-error').hidden = false;
+  </script>
+</body>
+</html>

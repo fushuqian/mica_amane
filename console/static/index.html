@@ -27,10 +27,15 @@
         <span>amane · mihomo</span>
       </span>
     </a>
+    <nav class="mh-nav">
+      <a href="/" aria-current="page">控制台</a>
+      <a href="/updates">更新</a>
+    </nav>
     <div class="mh-spacer"></div>
     <span class="mh-status" id="global-status"><i></i><span>CHECKING</span></span>
     <a id="link-amane-top" class="mh-btn mh-btn--soft topbar-extra" target="_blank" rel="noopener">amane</a>
     <button id="open-wizard" class="mh-btn mh-btn--soft topbar-extra" type="button">设置向导</button>
+    <a href="/logout" class="mh-btn mh-btn--soft topbar-extra">退出</a>
     <button id="refresh" class="mh-btn" type="button">刷新</button>
     <button class="mh-theme-toggle" data-theme-toggle type="button" aria-pressed="false" aria-label="切换主题">
       <svg class="i-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" aria-hidden="true">
@@ -178,35 +183,6 @@
                     aria-checked="false" aria-label="mihomo 服务开关"><span></span></button>
           </div>
           <button class="mh-btn" type="button" data-open>打开</button>
-        </div>
-      </section>
-
-      <section class="mh-card service-card" id="updates-card" data-key="updates" tabindex="0" aria-haspopup="dialog" style="--d:170ms">
-        <div class="mh-card__head svc-head">
-          <div class="mh-icon mh-tone-d">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M20 12a8 8 0 1 1-2.6-5.9"/>
-              <path d="M20 4v4h-4"/>
-            </svg>
-          </div>
-          <div class="svc-title">
-            <h2 class="mh-h3">更新</h2>
-            <div class="mh-meta mh-mono">VERSION</div>
-          </div>
-        </div>
-        <p class="mh-card__desc">配置页与内核的版本对比。检查更新、逐项升级都在详情里完成。</p>
-
-        <div class="mh-card__foot">
-          <span class="mh-meta">amane 只能随镜像更新</span>
-          <button class="mh-btn" type="button" data-open>打开</button>
-        </div>
-
-        <div class="svc-body" id="body-updates">
-          <div class="svc-actions">
-            <button id="updates-check" class="mh-btn mh-btn--accent" type="button">检查更新</button>
-          </div>
-          <div id="update-list"><p class="mh-meta">点「检查更新」对比 GitHub 最新版本</p></div>
-          <p class="mh-meta">程序本体与 mihomo 直接从 GitHub 更新；amane 服务端只能随镜像更新。下载走国外线路，慢时可能等几分钟。</p>
         </div>
       </section>
     </div>

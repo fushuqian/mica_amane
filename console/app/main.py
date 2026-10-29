@@ -2,15 +2,19 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import hashlib
+import hmac
 import os
 import subprocess
+import time
 import secrets as pysecrets
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import parse_qs, quote
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -23,7 +27,10 @@ STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 CONSOLE_USER = os.environ.get("CONSOLE_USER", "admin")
 CONSOLE_PASSWORD = os.environ.get("CONSOLE_PASSWORD", "")
 
-PUBLIC_PATHS = {"/healthz", "/api/setup/state"}
+PUBLIC_PATHS = {"/healthz", "/api/setup/state", "/login", "/logout"}
+
+SESSION_COOKIE = "mica_session"
+SESSION_TTL = 7 * 24 * 3600
 
 
 @asynccontextmanager
@@ -47,9 +54,51 @@ def _auth_source() -> str:
     return "env" if CONSOLE_PASSWORD else "none"
 
 
+def _check_credentials(user: str, password: str, source: str) -> bool:
+    if source == "file":
+        return store.verify_credentials(user, password)
+    return pysecrets.compare_digest(user, CONSOLE_USER) and pysecrets.compare_digest(
+        password, CONSOLE_PASSWORD
+    )
+
+
+def _session_secret() -> bytes:
+    """登录 cookie 的签名密钥，持久化在 data 目录，重启后仍有效。"""
+    path = store.CONSOLE_DIR / "session.key"
+    try:
+        key = path.read_bytes()
+        if len(key) >= 16:
+            return key
+    except FileNotFoundError:
+        pass
+    key = pysecrets.token_bytes(32)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(key)
+        path.chmod(0o600)
+    except OSError:
+        pass
+    return key
+
+
+def _issue_session() -> str:
+    expires = str(int(time.time()) + SESSION_TTL)
+    sig = hmac.new(_session_secret(), expires.encode(), hashlib.sha256).hexdigest()
+    return f"{expires}.{sig}"
+
+
+def _session_valid(token: str) -> bool:
+    expires, _, sig = (token or "").partition(".")
+    if not expires.isdigit():
+        return False
+    expected = hmac.new(_session_secret(), expires.encode(), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(sig, expected) and int(expires) > time.time()
+
+
 @app.middleware("http")
-async def basic_auth(request: Request, call_next):
-    if request.url.path in PUBLIC_PATHS:
+async def auth_guard(request: Request, call_next):
+    path = request.url.path
+    if path in PUBLIC_PATHS or path.startswith("/static/"):
         return await call_next(request)
 
     source = _auth_source()
@@ -58,28 +107,24 @@ async def basic_auth(request: Request, call_next):
         return await call_next(request)
 
     header = request.headers.get("authorization", "")
-    ok = False
     if header.startswith("Basic "):
         try:
             decoded = base64.b64decode(header[6:]).decode("utf-8")
             user, _, password = decoded.partition(":")
         except Exception:  # noqa: BLE001
             user, password = "", ""
-        if source == "file":
-            ok = store.verify_credentials(user, password)
-        else:
-            ok = pysecrets.compare_digest(user, CONSOLE_USER) and pysecrets.compare_digest(
-                password, CONSOLE_PASSWORD
-            )
+        if _check_credentials(user, password, source):
+            return await call_next(request)
 
-    if ok:
+    if _session_valid(request.cookies.get(SESSION_COOKIE, "")):
         return await call_next(request)
 
-    return Response(
-        status_code=401,
-        content="需要登录",
-        headers={"WWW-Authenticate": 'Basic realm="mica-amane"'},
-    )
+    if path.startswith("/api/"):
+        return JSONResponse({"detail": "需要登录"}, status_code=401)
+
+    # 页面请求直接带去登录页，避免内嵌浏览器弹不出 Basic 认证框
+    target = path + (f"?{request.url.query}" if request.url.query else "")
+    return RedirectResponse(f"/login?next={quote(target)}", status_code=303)
 
 
 @app.middleware("http")
@@ -99,6 +144,56 @@ async def healthz():
 @app.get("/")
 async def index():
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/updates")
+async def updates_page():
+    return FileResponse(STATIC_DIR / "updates.html")
+
+
+@app.get("/login")
+async def login_page(request: Request):
+    if _auth_source() == "none":
+        return RedirectResponse("/", status_code=303)
+    if _session_valid(request.cookies.get(SESSION_COOKIE, "")):
+        return RedirectResponse("/", status_code=303)
+    return FileResponse(STATIC_DIR / "login.html")
+
+
+@app.post("/login")
+async def login_submit(request: Request):
+    source = _auth_source()
+    if source == "none":
+        return RedirectResponse("/", status_code=303)
+
+    raw = (await request.body()).decode("utf-8", "replace")
+    form = {key: value[0] for key, value in parse_qs(raw).items()}
+    user = form.get("username", "")
+    password = form.get("password", "")
+    target = form.get("next") or "/"
+    if not target.startswith("/") or target.startswith("//"):
+        target = "/"
+
+    if not _check_credentials(user, password, source):
+        return RedirectResponse(f"/login?error=1&next={quote(target)}", status_code=303)
+
+    resp = RedirectResponse(target, status_code=303)
+    resp.set_cookie(
+        SESSION_COOKIE,
+        _issue_session(),
+        max_age=SESSION_TTL,
+        httponly=True,
+        samesite="lax",
+        path="/",
+    )
+    return resp
+
+
+@app.get("/logout")
+async def logout():
+    resp = RedirectResponse("/login", status_code=303)
+    resp.delete_cookie(SESSION_COOKIE, path="/")
+    return resp
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

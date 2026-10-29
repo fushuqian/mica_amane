@@ -2,6 +2,11 @@
 
 ## 2026-10-29
 
+- 新增登录页，替代浏览器 Basic 认证弹窗：`GET /login` 表单页、`POST /login` 校验后写入 7 天 HMAC 签名 cookie（`mica_session`，HttpOnly/SameSite=Lax），未登录的页面请求 303 跳登录页，`/api/*` 仍返回 401 JSON；Basic 认证保留给脚本与第三方工具。
+- 会话签名密钥持久化在 `/data/mihomo/session.key`（权限 600），容器重启后登录态不失效；新增 `/logout` 与顶栏「退出」。
+- 顶栏新增导航「控制台 / 更新」，「更新」拆成独立页面 `GET /updates`（`updates.html` + `updates.js`），首页不再有「更新」卡片；检查更新、逐项升级与说明都在更新页。
+- 静态资源 `/static/*` 允许免登录访问（登录页需要样式），其余路径仍需鉴权。
+- 展开面板由底部升起改为视口居中显示。
 - Hero 主标题文案改为「给小姐姐 / 一个温暖的家」。
 - 卡片改为「点击展开」：卡片只保留图标、标题、状态胶囊、简述和底栏，点击卡片或「打开」从底部升起舞台面板（对齐 mica-home 的 stage 设计：模糊遮罩、大圆角、86vh 上限），详情控件移入面板后按需滚动。
 - 移除原卡片内折叠逻辑与 `is-collapsed` / `.svc-toggle` / localStorage `folds`；改为打开时把卡片的 `.svc-body` 原节点移入舞台，关闭时归位，保留全部已绑定事件。
