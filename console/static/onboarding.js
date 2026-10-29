@@ -23,8 +23,11 @@
     toast._timer = setTimeout(() => box.classList.remove('is-visible'), 2600);
   }
 
+  // 与 app.js 一致：避免地址栏带凭据时相对路径 fetch 被浏览器拒绝
+  const API_BASE = `${location.protocol}//${location.host}`;
+
   async function api(path, options = {}) {
-    const resp = await fetch(path, {
+    const resp = await fetch(API_BASE + path, {
       headers: { 'Content-Type': 'application/json' },
       ...options,
     });

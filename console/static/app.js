@@ -29,8 +29,12 @@ function toast(message, isError = false) {
   toast._timer = setTimeout(() => el.classList.remove('is-visible'), 2600);
 }
 
+// 地址栏里带账号密码时（如 http://admin:pass@host），相对路径 fetch 会被浏览器拒绝，
+// 这里统一拼成不含凭据的绝对地址，凭据仍由浏览器按 realm 自动带上。
+const API_BASE = `${location.protocol}//${location.host}`;
+
 async function api(path, options = {}) {
-  const resp = await fetch(path, {
+  const resp = await fetch(API_BASE + path, {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
@@ -661,7 +665,7 @@ async function waitForConsole() {
   for (let i = 0; i < 40; i += 1) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     try {
-      const resp = await fetch('/healthz', { cache: 'no-store' });
+      const resp = await fetch(API_BASE + '/healthz', { cache: 'no-store' });
       if (resp.ok) return true;
     } catch {
       /* 重启中 */

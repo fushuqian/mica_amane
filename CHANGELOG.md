@@ -11,6 +11,8 @@
 - 字体按"纯系统回退"处理：不引外部 CDN、不放 woff2，依赖令牌里的 HarmonyOS/PingFang/雅黑/Consolas 回退链。
 - 验证：独立容器挂载同一份静态文件，HTTP 200 且 `mh-display` / `hero__panel` / `mh-card__foot` 齐全；浏览器实测 3 列布局、明暗切换、卡片折叠正常，无控制台报错。
 - 发布与本地更新：CI 构建 `2aa8793` 镜像成功，本地 `docker compose pull && up -d` 已切换新镜像；容器内 `/data/app/console` 为 10-28 的过期热更版本（旧界面），已移入 `/data/toberemoved/console-20261028`，配置页回落到镜像内置版本。
+- 修复：地址栏带账号密码（`http://user:pass@host/`）时浏览器拒绝相对路径 fetch，导致每 10 秒弹「状态获取失败：…Request cannot be constructed from a URL that includes credentials」。前端改用 `location.origin` 拼绝对地址请求，凭据仍由浏览器按 realm 自动携带。
+- 静态资源响应加 `Cache-Control: no-cache`，镜像更新后浏览器按 ETag 重新校验，不再出现改了界面却看到旧样式的情况。
 
 ## 2026-10-28
 

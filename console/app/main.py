@@ -82,6 +82,15 @@ async def basic_auth(request: Request, call_next):
     )
 
 
+@app.middleware("http")
+async def static_no_cache(request: Request, call_next):
+    """静态文件每次都用 ETag 重新校验，避免镜像更新后浏览器仍用旧样式。"""
+    response = await call_next(request)
+    if request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 @app.get("/healthz")
 async def healthz():
     return {"status": "ok"}
