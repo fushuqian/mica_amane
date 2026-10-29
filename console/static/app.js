@@ -523,43 +523,66 @@ async function importSubscription(event) {
   }
 }
 
-/* ---------------- 卡片折叠 ---------------- */
+/* ---------------- 卡片详情舞台 ---------------- */
 
-const FOLD_KEY = 'mica-amane:folds';
+const stageWrap = $('#stage-wrap');
+const stageBody = $('#stage-body');
+let stageOwner = null;
 
-function loadFolds() {
-  try {
-    return JSON.parse(localStorage.getItem(FOLD_KEY) || '{}') || {};
-  } catch {
-    return {};
-  }
+function openStage(card) {
+  const body = card.querySelector('.svc-body');
+  if (!body) return;
+  if (stageOwner) closeStage();
+
+  const icon = card.querySelector('.mh-icon');
+  const name = card.querySelector('.mh-h3');
+  const meta = card.querySelector('.svc-title .mh-meta');
+  const stageIcon = $('#stage-icon');
+  stageIcon.className = icon ? icon.className : 'mh-icon';
+  stageIcon.innerHTML = icon ? icon.innerHTML : '';
+  $('#stage-name').textContent = name ? name.textContent : '';
+  $('#stage-meta').textContent = meta ? meta.textContent : '';
+
+  stageBody.appendChild(body);
+  stageOwner = { card, body };
+  stageWrap.classList.add('open');
+  stageWrap.setAttribute('aria-hidden', 'false');
+  $('#stage-close').focus();
 }
 
-function applyCollapsed(card, collapsed) {
-  card.classList.toggle('is-collapsed', collapsed);
-  const btn = card.querySelector('.svc-toggle');
-  if (btn) btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+function closeStage() {
+  if (!stageOwner) return;
+  stageOwner.card.appendChild(stageOwner.body);
+  stageOwner = null;
+  stageWrap.classList.remove('open');
+  stageWrap.setAttribute('aria-hidden', 'true');
 }
 
-function setupCardCollapse() {
-  const folds = loadFolds();
+function setupCards() {
   document.querySelectorAll('.service-card[data-key]').forEach((card) => {
-    const key = card.dataset.key;
-    applyCollapsed(card, Boolean(folds[key]));
-    const head = card.querySelector('.svc-head');
-    if (!head) return;
-    head.addEventListener('click', (event) => {
-      if (event.target.closest('.mh-switch')) return;
-      const next = !card.classList.contains('is-collapsed');
-      applyCollapsed(card, next);
-      const saved = loadFolds();
-      saved[key] = next;
-      try {
-        localStorage.setItem(FOLD_KEY, JSON.stringify(saved));
-      } catch {
-        /* 隐私模式下忽略 */
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('[data-open]')) {
+        openStage(card);
+        return;
       }
+      // 卡片内的按钮、链接、表单控件保留自己的交互
+      if (event.target.closest('button,a,input,select,textarea')) return;
+      openStage(card);
     });
+    card.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (event.target !== card) return;
+      event.preventDefault();
+      openStage(card);
+    });
+  });
+
+  $('#stage-close').addEventListener('click', closeStage);
+  stageWrap.addEventListener('click', (event) => {
+    if (event.target === stageWrap) closeStage();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeStage();
   });
 }
 
@@ -702,7 +725,7 @@ async function applyUpdate(target, btn) {
 }
 
 async function init() {
-  setupCardCollapse();
+  setupCards();
   await loadBlocked();
   await loadToken();
   await refreshStatus();
