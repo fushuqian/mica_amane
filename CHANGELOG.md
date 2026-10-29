@@ -9,6 +9,8 @@
 - 间距与字号对齐规范刻度（区块 44、卡片间距 18、段内 14），`style.css` 保持零硬编码色值。
 - 新增卡片指针光晕（`--mx` / `--my`），实现规范 §4.3。
 - 字体按"纯系统回退"处理：不引外部 CDN、不放 woff2，依赖令牌里的 HarmonyOS/PingFang/雅黑/Consolas 回退链。
+- 验证：独立容器挂载同一份静态文件，HTTP 200 且 `mh-display` / `hero__panel` / `mh-card__foot` 齐全；浏览器实测 3 列布局、明暗切换、卡片折叠正常，无控制台报错。
+- 发布与本地更新：CI 构建 `2aa8793` 镜像成功，本地 `docker compose pull && up -d` 已切换新镜像；容器内 `/data/app/console` 为 10-28 的过期热更版本（旧界面），已移入 `/data/toberemoved/console-20261028`，配置页回落到镜像内置版本。
 
 ## 2026-10-28
 
