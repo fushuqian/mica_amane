@@ -2,29 +2,30 @@
 #
 # 镜像已发布到 Docker Hub：kenzong/mica-amane:latest
 # 粘贴前必须修改：
-#   1. /vol1/1000/media 换成 NAS 上真实的媒体目录
-#   2. 端口 8088 / 9000 若被占用，改成空闲端口
+#   1. /vol1/1000/media、/vol1/1000/downloads 换成 NAS 上真实的媒体 / 下载目录
+#   2. 端口 9950 / 9951 若被占用，改成空闲端口（AMANE_PUBLIC_PORT 要跟 9951 保持一致）
 # Clash API 密钥首次启动自动生成，保存在 /data/mihomo/clash_secret，无需配置
 services:
   stack:
     image: kenzong/mica-amane:latest
-    container_name: amane-stack
+    container_name: mica-amane
     restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
       CONSOLE_USER: admin
       # 留空：首次打开配置页走免密向导，由向导设置账号密码
       CONSOLE_PASSWORD: ""
-      AMANE_SAFE_DIRS: /media
+      AMANE_SAFE_DIRS: /media,/downloads
       # 与下面 amane 端口映射的宿主端口保持一致（配置页跳转用）
-      AMANE_PUBLIC_PORT: "9000"
+      AMANE_PUBLIC_PORT: "9951"
       SUB_USER_AGENT: "mihomo.party/v2.0.4 (clash.meta)"
     ports:
-      - "8088:8088"   # 配置页
-      - "9000:8000"   # amane（换成 NAS 上空闲端口）
+      - "9950:8088"   # 配置页
+      - "9951:8000"   # amane（换成 NAS 上空闲端口）
     volumes:
       - ./data:/data
       - /vol1/1000/media:/media
+      - /vol1/1000/downloads:/downloads
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8088/healthz"]
       interval: 30s

@@ -34,14 +34,16 @@
 
 1. 在 Docker → Compose 里新建项目
 2. 粘贴 [`compose.pull.yaml`](compose.pull.yaml) 的内容
-3. 改两处：
+3. 按需修改（媒体/下载目录、端口）：
 
 ```yaml
-- /vol1/1000/media:/media           # 换成 NAS 真实媒体目录
-- "9000:8000"                       # 端口被占用就换
+- /vol1/1000/media:/media             # 换成 NAS 真实媒体目录
+- /vol1/1000/downloads:/downloads     # 换成 NAS 真实下载目录（可删）
+- "9951:8000"                         # amane 端口，被占用就换（同步改 AMANE_PUBLIC_PORT）
+- "9950:8088"                         # 配置页端口，被占用就换
 ```
 
-4. 启动项目，打开 `http://NAS_IP:8088`
+4. 启动项目，打开 `http://NAS_IP:9950`
 
 环境变量、端口、卷挂载都已经写在 Compose 里，不需要手工配。
 
