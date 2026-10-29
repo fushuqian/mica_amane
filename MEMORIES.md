@@ -22,3 +22,4 @@
 - httpx 0.28 起不再接受请求级 `proxy=` 参数（报 `unexpected keyword argument 'proxy'`），代理必须在 `AsyncClient(...)` 构造时传入，要按代理逐个新建客户端。
 - 本仓库默认分支是 `master`，调 GitHub API 取最新提交不能写死 `/commits/main`（会 422），用 `/commits?per_page=1`。
 - 配置页自更新：supervisord 用启动脚本判断 `/data/app/console/.ready` 决定加载路径；`/opt/console` 与其 venv 必须 chown 给 appuser，否则新依赖装不进去；替换前把旧目录改名备份，失败可回滚。
+- HTTP 头只允许 ASCII：`CLASH_SECRET` 若含中文（如照抄 compose 模板的「请替换为随机长串」），httpx 构造 `Authorization` 头时抛 `UnicodeEncodeError`，接口直接 500 且响应体是没有原因的 `Internal Server Error`。密钥一律用 `secrets.token_hex(32)` 自动生成，杜绝手填。

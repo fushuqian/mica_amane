@@ -58,14 +58,6 @@ else
   exit 1
 fi
 
-gen_secret() {
-  if command -v openssl >/dev/null 2>&1; then
-    openssl rand -hex 32
-  else
-    head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n'
-  fi
-}
-
 set_env() {
   key="$1"
   val="$2"
@@ -84,8 +76,7 @@ get_env() {
 
 if [ ! -f .env ]; then
   cp .env.example .env
-  set_env CLASH_SECRET "$(gen_secret)"
-  echo "已生成 .env，并随机化 CLASH_SECRET"
+  echo "已生成 .env（Clash API 密钥由容器首次启动自动生成）"
 else
   echo "检测到已有 .env，沿用现有配置"
 fi
@@ -100,11 +91,6 @@ MEDIA_PATH="$(get_env MEDIA_DIR)"
 [ -n "$AMANE_PORT_VAL" ] || AMANE_PORT_VAL=8000
 [ -n "$PANEL_PORT_VAL" ] || PANEL_PORT_VAL=8088
 [ -n "$MEDIA_PATH" ] || MEDIA_PATH="./media"
-
-if grep -q '^CLASH_SECRET=change-me' .env 2>/dev/null; then
-  set_env CLASH_SECRET "$(gen_secret)"
-  echo "检测到示例 CLASH_SECRET，已替换为随机值"
-fi
 
 # ---------- 目录与权限 ----------
 

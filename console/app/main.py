@@ -278,7 +278,6 @@ async def status():
 async def setup_state():
     creds = store.load_credentials()
     source = "file" if creds else ("env" if CONSOLE_PASSWORD else "none")
-    secret = os.environ.get("CLASH_SECRET", "")
     username = None
     if source == "file":
         username = creds.get("username")
@@ -288,7 +287,6 @@ async def setup_state():
         "needs_onboarding": not store.onboarding_done(),
         "auth_source": source,
         "username": username,
-        "clash_secret_default": (not secret) or ("change-me" in secret),
     }
 
 

@@ -34,10 +34,9 @@
 
 1. 在 Docker → Compose 里新建项目
 2. 粘贴 [`compose.pull.yaml`](compose.pull.yaml) 的内容
-3. 改三处：
+3. 改两处：
 
 ```yaml
-CLASH_SECRET: "换成随机长串"        # 必填，可用 openssl rand -hex 32 生成
 - /vol1/1000/media:/media           # 换成 NAS 真实媒体目录
 - "9000:8000"                       # 端口被占用就换
 ```
@@ -62,7 +61,7 @@ chmod +x deploy.sh
 脚本会自动完成：
 
 1. 检查 Docker 与 Docker Compose
-2. 生成 `.env`，把 `CLASH_SECRET` 替换为随机值
+2. 生成 `.env`（Clash API 密钥由容器首次启动自动生成）
 3. 创建 `data/` 与媒体目录，处理 UID 1000 权限
 4. 检查 8000 / 8088 端口占用
 5. 拉取镜像并启动
@@ -84,7 +83,7 @@ chmod +x deploy.sh
 ```bash
 git clone https://github.com/fushuqian/mica_amane.git
 cd mica_amane
-cp .env.example .env        # 编辑 CLASH_SECRET 等
+cp .env.example .env        # 按需修改端口、媒体目录等
 docker compose -f compose.yaml -f compose.build.yaml up -d --build
 ```
 
@@ -98,7 +97,7 @@ NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)�
 
 | 变量 | 说明 | 必填 |
 |---|---|---|
-| `CLASH_SECRET` | mihomo API 密钥，配置页与内核共用 | 是 |
+| `CLASH_SECRET` | 已取消，无需配置；容器首次启动自动生成密钥，存于 `/data/mihomo/clash_secret`（0600，界面不展示），每次启动同步进 `config.yaml` | — |
 | `CONSOLE_USER` | 登录保护的用户名，默认 `admin` | 否 |
 | `CONSOLE_PASSWORD` | 留空 = 首次免密进向导；设置后以环境变量为准 | 否 |
 | `AMANE_TOKEN` | amane Token，留空由程序生成 | 否 |
@@ -118,7 +117,7 @@ NAS 图形界面里要现场构建，用 [`compose.nas.yaml`](compose.nas.yaml)�
 打开配置页后自动进入 6 步：
 
 1. 欢迎与安全提示（免密模式仅限内网）
-2. 环境自检：`CLASH_SECRET` 是否为默认值、登录保护、mihomo / amane 是否在线
+2. 环境自检：登录保护、mihomo / amane 是否在线
 3. 导入订阅
 4. 开启 amane 出网代理
 5. 查看/复制 amane Token 与入口
@@ -188,7 +187,7 @@ docker compose up -d
 ## 常见问题
 
 **容器反复重启？**
-`CLASH_SECRET` 没有设置或设成了空值。entrypoint 会强制校验。
+先看 `docker logs` 的报错。历史版本曾要求必须提供 `CLASH_SECRET`；现在密钥自动生成，不再需要任何配置。
 
 **拉取镜像超时？**
 Docker Hub 在国内可能不可达。给 Docker 配代理，或在 NAS 上配置镜像加速。

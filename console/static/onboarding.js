@@ -89,7 +89,6 @@
     const mihomo = services.mihomo || { online: false };
     const amane = services.amane || { online: false };
     const source = (state.setup && state.setup.auth_source) || 'none';
-    const secretDefault = Boolean(state.setup && state.setup.clash_secret_default);
 
     const authOk = source !== 'none';
     const authHint = source === 'file'
@@ -102,7 +101,6 @@
       <h3 class="mh-h3">环境自检</h3>
       <p class="mh-card__desc">以下项目有问题不影响继续，但建议先处理。</p>
       <ul class="wizard-checks">
-        ${checkRow(!secretDefault, 'CLASH_SECRET', secretDefault ? '仍是示例默认值，请去 .env 修改后重启' : '已自定义')}
         ${checkRow(authOk, '登录保护', authHint)}
         ${checkRow(mihomo.online, 'mihomo 内核', mihomo.online ? '在线' : '未就绪，订阅导入可能失败')}
         ${checkRow(amane.online, 'amane 服务', amane.online ? '在线' : '未就绪，代理开关可能失败')}

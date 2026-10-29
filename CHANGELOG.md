@@ -2,6 +2,9 @@
 
 ## 2026-10-29
 
+- 取消手工配置 `CLASH_SECRET`：非 ASCII 的 secret（如 NAS 上照抄模板的「请替换为随机长串」）会让 `Authorization` 头编码失败，订阅导入报 `500 Internal Server Error`。现在 entrypoint 首次启动用 `python3 secrets.token_hex(32)` 生成密钥写入 `/data/mihomo/clash_secret`（0600），之后每次启动复用并同步覆盖 `config.yaml` 的 `secret` 行，内核与配置页始终一致；界面不展示密钥。
+- `config_store.normalize()` 改为强制写入密钥（订阅里自带的 `secret` 会被覆盖），避免导入订阅后 401。
+- 同步移除 `CLASH_SECRET` 的强制校验与相关提示：`.env.example`、`compose.nas.yaml`、`compose.pull.yaml`、`deploy.sh`（含 `gen_secret`）、README、IMPORTANT；向导环境自检去掉「CLASH_SECRET 是否为默认值」一项，`/api/setup/state` 不再返回 `clash_secret_default`。
 - 设置页头像增加裁剪：选图后弹窗内可拖动选位置、滑块缩放（1–3 倍），确认后裁剪为 256×256 PNG 再保存；裁剪在浏览器完成，上传体积很小。
 - 顶栏精简：去掉 ONLINE 状态、amane 跳转、设置向导、刷新、退出按钮，右侧改为用户头像；点击头像弹出菜单：设置 / 主题（二级菜单：迷雾=亮色、深沉=暗色）/ 退出登录。
 - 新增设置页 `GET /settings`：可上传头像（PNG/JPEG/WEBP/GIF，≤512KB，存 `/data/mihomo/avatar`）与修改登录用户名/密码；改密码需验证当前密码，保存后当前会话不断开。

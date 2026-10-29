@@ -14,7 +14,7 @@
 
 | 键 | 用途 | 必填 |
 |---|---|---|
-| `CLASH_SECRET` | mihomo API 密钥（console 与内核共用） | 是 |
+| `CLASH_SECRET` | 已取消：容器首次启动自动生成（`python3 secrets.token_hex(32)`），存 `/data/mihomo/clash_secret`（0600），每次启动覆盖 `config.yaml` 的 `secret` 行；界面不展示 | 否 |
 | `CONSOLE_USER` / `CONSOLE_PASSWORD` | 配置页 Basic Auth；密码留空则首次免密进向导 | 否（留空即向导模式） |
 | `AMANE_TOKEN` | amane API Token（也可留空由程序生成） | 建议 |
 | `AMANE_SAFE_DIRS` | amane 允许访问的媒体目录 | 是 |
@@ -29,6 +29,7 @@
 - `/data/amane`：amane 数据（SQLite、token、resources、plugins）
 - `/data/mihomo`：mihomo 工作目录，`-d` 指向这里
   - `config.yaml`：唯一配置，首页订阅写入此处，重启后仍生效
+  - `clash_secret`：Clash API 密钥，自动生成，权限 600，界面不展示
   - `blocked_nodes.json`：首页节点屏蔽名单
   - `credentials.json`：配置页登录凭据（用户名 + PBKDF2 哈希 + 盐，权限 600）
   - `onboarded.json`：首次向导完成标记，删除后刷新页面会重新弹向导

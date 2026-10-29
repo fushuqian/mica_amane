@@ -56,7 +56,8 @@ def normalize(text: str, secret: str, mixed_port: int = 7890, api_port: int = 90
         raise ValueError("配置内容为空")
 
     data.setdefault("external-controller", f"0.0.0.0:{api_port}")
-    data.setdefault("secret", secret)
+    # 密钥由容器统一生成，订阅里自带的一律覆盖，避免内核与配置页对不上导致 401
+    data["secret"] = secret
     data.setdefault("mixed-port", mixed_port)
     data.setdefault("allow-lan", False)
 

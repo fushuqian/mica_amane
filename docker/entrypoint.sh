@@ -1,9 +1,16 @@
 #!/bin/sh
 set -eu
 
-: "${CLASH_SECRET:?CLASH_SECRET 未设置，请参考 .env.example}"
-
 mkdir -p /data/amane /data/mihomo /data/mihomo/bin /data/app /data/update
+
+# Clash API 密钥：首次启动自动生成并落盘，之后每次启动复用；界面不展示
+SECRET_FILE=/data/mihomo/clash_secret
+if [ ! -s "$SECRET_FILE" ]; then
+    python3 -c 'import secrets; print(secrets.token_hex(32))' > "$SECRET_FILE"
+    chmod 600 "$SECRET_FILE"
+fi
+CLASH_SECRET=$(cat "$SECRET_FILE")
+export CLASH_SECRET
 
 # 一次性从旧的 metacubexd 数据目录迁移配置、屏蔽名单与 geo 数据
 if [ ! -f /data/mihomo/config.yaml ] && [ -f /data/metacubexd/console/mihomo.yaml ]; then
@@ -40,6 +47,21 @@ rules:
   - MATCH,DIRECT
 EOF
 fi
+
+# 每次启动都把密钥同步进 config.yaml，保证内核与配置页用的始终是同一个值
+python3 - "$CLASH_SECRET" <<'PY'
+import re
+import sys
+
+path = "/data/mihomo/config.yaml"
+line = f"secret: {sys.argv[1]}"
+text = open(path, encoding="utf-8").read()
+if re.search(r"(?m)^secret:", text):
+    text = re.sub(r"(?m)^secret:.*$", line, text, count=1)
+else:
+    text = text.rstrip("\n") + "\n" + line + "\n"
+open(path, "w", encoding="utf-8").write(text)
+PY
 
 chown -R appuser:appuser /data
 

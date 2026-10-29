@@ -2,9 +2,9 @@
 #
 # 镜像已发布到 Docker Hub：kenzong/mica-amane:latest
 # 粘贴前必须修改：
-#   1. CLASH_SECRET 换成随机长串（可用 openssl rand -hex 32 生成）
-#   2. /vol1/1000/media 换成 NAS 上真实的媒体目录
-#   3. 端口 8088 / 9000 若被占用，改成空闲端口
+#   1. /vol1/1000/media 换成 NAS 上真实的媒体目录
+#   2. 端口 8088 / 9000 若被占用，改成空闲端口
+# Clash API 密钥首次启动自动生成，保存在 /data/mihomo/clash_secret，无需配置
 services:
   stack:
     image: kenzong/mica-amane:latest
@@ -12,7 +12,6 @@ services:
     restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
-      CLASH_SECRET: "请替换为随机长串"
       CONSOLE_USER: admin
       # 留空：首次打开配置页走免密向导，由向导设置账号密码
       CONSOLE_PASSWORD: ""
