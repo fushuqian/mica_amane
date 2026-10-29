@@ -561,10 +561,6 @@ function closeStage() {
 function setupCards() {
   document.querySelectorAll('.service-card[data-key]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (event.target.closest('[data-open]')) {
-        openStage(card);
-        return;
-      }
       // 卡片内的按钮、链接、表单控件保留自己的交互
       if (event.target.closest('button,a,input,select,textarea')) return;
       openStage(card);

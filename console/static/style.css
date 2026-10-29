@@ -39,7 +39,6 @@ main { padding: 78px 0 78px; }
 .mh-card > .svc-body { display: none; }
 
 .foot-left { display: flex; align-items: center; gap: 10px; }
-.svc-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
 
 .svc-body { margin-top: 18px; }
 
