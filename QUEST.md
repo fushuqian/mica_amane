@@ -12,12 +12,16 @@
 | Q-008 | mihomo 卡片加服务开关（关闭即停内核并同步关闭 amane 出网代理、状态跨重启保持）；amane 卡片直接显示 Token 并提供复制 | 已完成 | 高 | 2026-10-28 |
 | Q-009 | 配置页更新功能：程序本体与 mihomo 从 GitHub 一键更新，amane 随镜像更新 | 已完成 | 高 | 2026-10-28 |
 | Q-010 | 镜像自动发布：GitHub Actions 在推送 master 时构建 `linux/amd64` 并推送 `kenzong/mica-amane:latest` 与 commit tag | 已完成 | 中 | 2026-10-28 |
+| Q-011 | 全新部署离线可启动：镜像内置 geoip/geosite 数据，entrypoint 缺文件时补齐；订阅保存时内核不可达自动重启重试 | 已完成 | 高 | 2026-10-28 |
+| Q-012 | amane 跳转端口可配置：compose 用 `AMANE_PUBLIC_PORT`（随 `AMANE_PORT`），配置页卡片内可手动填写并持久化到 `settings.json` | 已完成 | 高 | 2026-10-28 |
+| Q-013 | 镜像每周定时构建，跟随上游 amane 最新版本 | 已完成 | 中 | 2026-10-28 |
+| Q-014 | 配置页改用 Mica UI 设计语言，支持明暗双主题与本地持久化 | 已完成 | 中 | 2026-10-28 |
 
 ## 部署信息
 
-- 入口端口：`8000`（amane）、`8088`（配置页）
-- 内部端口：`7890`（mixed 代理）、`9090`（Clash API，仅容器内）
-- 数据目录：`./data/amane`、`./data/mihomo`（配置、屏蔽名单、geo 数据）
+- 入口端口：配置页 `8088`、amane `AMANE_PORT`（默认 8000，配置页卡片可单独设置对外端口）
+- 内部端口：`7890`（mixed 代理）、`9090`（Clash API，仅容器内）、`8000`（amane 内部监听）
+- 数据目录：`./data/amane`、`./data/mihomo`、`./data/app`（配置页热更新）、`./data/update`（下载缓存）
 - 媒体目录：`./media`（可通过 `MEDIA_DIR` 修改）
-- 启动：`cp .env.example .env` 后填写密钥，`docker compose up -d --build`
+- 启动：`docker compose pull && docker compose up -d`（拉取已发布镜像）；本地源码构建用 `compose.yaml` + `compose.build.yaml` 或 `deploy.sh --build`
 - 公网：`docker compose --profile public up -d`（需配置 `BASE_DOMAIN` 等）
