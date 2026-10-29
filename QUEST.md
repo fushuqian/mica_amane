@@ -16,6 +16,7 @@
 | Q-012 | amane 跳转端口可配置：compose 用 `AMANE_PUBLIC_PORT`（随 `AMANE_PORT`），配置页卡片内可手动填写并持久化到 `settings.json` | 已完成 | 高 | 2026-10-28 |
 | Q-013 | 镜像每周定时构建，跟随上游 amane 最新版本 | 已完成 | 中 | 2026-10-28 |
 | Q-014 | 配置页改用 Mica UI 设计语言，支持明暗双主题与本地持久化 | 已完成 | 中 | 2026-10-28 |
+| Q-015 | 按 MICA-UI.md 规范重写界面：Hero + `mh-grid` 三列卡片 + `.mh-card__head/desc/foot` 结构 + `.mh-table` 更新表 + `.is-*` 状态类 | 已完成 | 中 | 2026-10-29 |
 
 ## 部署信息
 

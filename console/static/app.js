@@ -369,7 +369,7 @@ function renderNodes() {
 
   const visible = group.all.filter((name) => !state.blocked.has(name));
   if (!visible.length) {
-    list.innerHTML = '<p class="hint">该组节点已全部屏蔽。</p>';
+    list.innerHTML = '<p class="mh-meta">该组节点已全部屏蔽。</p>';
     renderBlocked();
     return;
   }
@@ -532,7 +532,7 @@ function loadFolds() {
 }
 
 function applyCollapsed(card, collapsed) {
-  card.classList.toggle('collapsed', collapsed);
+  card.classList.toggle('is-collapsed', collapsed);
   const btn = card.querySelector('.svc-toggle');
   if (btn) btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
 }
@@ -546,7 +546,7 @@ function setupCardCollapse() {
     if (!head) return;
     head.addEventListener('click', (event) => {
       if (event.target.closest('.mh-switch')) return;
-      const next = !card.classList.contains('collapsed');
+      const next = !card.classList.contains('is-collapsed');
       applyCollapsed(card, next);
       const saved = loadFolds();
       saved[key] = next;
@@ -584,11 +584,11 @@ $('#node-toggle').addEventListener('click', async () => {
     return;
   }
   list.hidden = false;
-  list.innerHTML = '<p class="hint">加载中…</p>';
+  list.innerHTML = '<p class="mh-meta">加载中…</p>';
   try {
     await loadGroups();
   } catch (err) {
-    list.innerHTML = `<p class="hint">读取代理组失败：${escapeHtml(err.message)}</p>`;
+    list.innerHTML = `<p class="mh-meta">读取代理组失败：${escapeHtml(err.message)}</p>`;
   }
 });
 $('#node-test').addEventListener('click', testNodes);
@@ -614,29 +614,34 @@ function renderUpdates(payload) {
     .filter((key) => comps[key])
     .map((key) => {
       const item = comps[key];
-      const latest = item.latest || '-';
-      const current = item.current || '-';
+      const latest = item.latest || '—';
+      const current = item.current || '—';
       let action;
       if (key === 'amane') {
-        action = '<span class="update-note">随镜像更新</span>';
+        action = '<span class="mh-meta">随镜像更新</span>';
       } else if (item.has_update) {
         action = `<button class="mh-btn mh-btn--soft" type="button" data-target="${key}">更新</button>`;
       } else {
-        action = '<span class="update-note">已是最新</span>';
+        action = '<span class="mh-meta">已是最新</span>';
       }
-      return `<div class="update-row">
-        <span class="update-name">${UPDATE_NAMES[key]}</span>
-        <span class="update-ver"><code class="mh-code">${escapeHtml(current)}</code><i>→</i><code class="mh-code">${escapeHtml(latest)}</code></span>
-        ${action}
-      </div>`;
+      return `<tr>
+        <td>${UPDATE_NAMES[key]}</td>
+        <td><code class="mh-code">${escapeHtml(current)}</code></td>
+        <td><code class="mh-code">${escapeHtml(latest)}</code></td>
+        <td>${action}</td>
+      </tr>`;
     })
     .join('');
   const errors = (payload && payload.errors) || [];
-  box.innerHTML =
-    rows || '<p class="svc-meta">没有可展示的版本信息</p>';
+  box.innerHTML = rows
+    ? `<table class="mh-table">
+        <thead><tr><th>组件</th><th>当前</th><th>最新</th><th>操作</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`
+    : '<div class="mh-empty"><b>没有可展示的版本信息</b>点「检查更新」重试。</div>';
   if (errors.length) {
     const hint = document.createElement('p');
-    hint.className = 'hint';
+    hint.className = 'mh-meta';
     hint.textContent = '部分上游检查失败：' + errors.join('；');
     box.appendChild(hint);
   }
@@ -644,11 +649,11 @@ function renderUpdates(payload) {
 
 async function loadUpdates() {
   const box = $('#update-list');
-  box.innerHTML = '<p class="svc-meta">检查中…</p>';
+  box.innerHTML = '<p class="mh-meta">检查中…</p>';
   try {
     renderUpdates(await api('/api/updates'));
   } catch (err) {
-    box.innerHTML = `<p class="svc-meta">检查失败：${escapeHtml(err.message)}</p>`;
+    box.innerHTML = `<p class="mh-meta">检查失败：${escapeHtml(err.message)}</p>`;
   }
 }
 
@@ -706,3 +711,12 @@ async function init() {
 }
 
 init();
+
+/* 卡片指针光晕（Mica UI §4.3） */
+document.addEventListener('pointermove', (event) => {
+  const card = event.target.closest('.mh-card');
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  card.style.setProperty('--mx', `${((event.clientX - rect.left) / rect.width) * 100}%`);
+  card.style.setProperty('--my', `${((event.clientY - rect.top) / rect.height) * 100}%`);
+});

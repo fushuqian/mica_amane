@@ -44,7 +44,21 @@
   </header>
 
   <main class="mh-container">
-    <div class="service-grid">
+    <section class="hero">
+      <div class="hero__copy">
+        <p class="mh-eyebrow">MICA AMANE · CONTROL</p>
+        <h1 class="mh-display">影库与出网<br>一体控制台</h1>
+        <p class="mh-lede">amane 负责影库刮削，mihomo 负责出网线路。所有配置都保存在容器的 data 目录，重启后依然生效。</p>
+      </div>
+      <aside class="mh-glass mh-panel hero__panel">
+        <div class="mh-label">System</div>
+        <p class="mh-meta">配置页 · 容器内 <span class="mh-mono">8088</span></p>
+        <p class="mh-meta">amane · 容器内 <span class="mh-mono">8000</span></p>
+        <p class="mh-meta">mihomo · <span class="mh-mono">7890 / 9090</span></p>
+      </aside>
+    </section>
+
+    <div class="mh-grid">
       <section class="mh-card service-card" data-key="amane" style="--d:60ms">
         <div class="mh-card__head svc-head">
           <div class="mh-icon mh-tone-a">
@@ -65,10 +79,9 @@
             </svg>
           </button>
         </div>
+        <p class="mh-card__desc">影库刮削与元数据服务</p>
 
         <div class="svc-body" id="body-amane">
-          <p class="svc-summary">影库刮削服务</p>
-
           <div class="svc-section">
             <div class="svc-label"><span class="mh-label">对外端口</span></div>
             <div class="row">
@@ -98,10 +111,11 @@
             </div>
             <p class="mh-meta">amane 的 API Token，登入 amane 或接第三方工具时使用；默认打码，点「显示」查看明文。</p>
           </div>
+        </div>
 
-          <div class="svc-foot">
-            <a id="link-amane" class="mh-btn mh-btn--soft" target="_blank" rel="noopener">进入 amane</a>
-          </div>
+        <div class="mh-card__foot">
+          <span class="mh-meta">宿主端口与内部 8000 不一致时，在卡片内改端口</span>
+          <a id="link-amane" class="mh-btn" target="_blank" rel="noopener">进入 amane</a>
         </div>
       </section>
 
@@ -119,8 +133,6 @@
             <div class="mh-meta mh-mono">PROXY CORE</div>
           </div>
           <span class="mh-status svc-state"><i></i><span id="state-mihomo-badge">CHECKING</span></span>
-          <button id="mihomo-switch" class="mh-switch svc-service-switch" role="switch"
-                  aria-checked="false" aria-label="mihomo 服务开关"><span></span></button>
           <button class="mh-icon-btn svc-toggle" type="button" aria-expanded="true"
                   aria-controls="body-mihomo" aria-label="展开或收起 mihomo">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -128,14 +140,14 @@
             </svg>
           </button>
         </div>
+        <p class="mh-card__desc">代理内核与订阅</p>
 
         <div class="svc-body" id="body-mihomo">
-          <p class="svc-summary" id="state-mihomo">检测中…</p>
-          <p class="mh-meta">关闭开关会停止 mihomo 内核，同时关闭 amane 的出网代理。</p>
+          <p class="mh-meta" id="state-mihomo">检测中…</p>
 
           <div class="svc-section">
             <div class="svc-label"><span class="mh-label">模式</span></div>
-            <div class="segmented" id="mode-switch">
+            <div class="mh-stack segmented" id="mode-switch" style="--mh-gap:7px;grid-auto-flow:column">
               <button class="mh-chip" type="button" data-mode="rule" aria-pressed="false">规则</button>
               <button class="mh-chip" type="button" data-mode="global" aria-pressed="false">全局</button>
               <button class="mh-chip" type="button" data-mode="direct" aria-pressed="false">直连</button>
@@ -165,7 +177,14 @@
               <button class="mh-btn mh-btn--accent" type="submit">导入</button>
             </form>
             <p class="mh-meta">导入成功后写入配置并热加载，节点列表会自动更新；重启容器后依然生效。</p>
+            <div class="mh-note"><b>注意</b>：关闭下方服务开关会停止 mihomo 内核，同时清空 amane 的出网代理。</div>
           </div>
+        </div>
+
+        <div class="mh-card__foot">
+          <span class="mh-label">服务</span>
+          <button id="mihomo-switch" class="mh-switch" role="switch"
+                  aria-checked="false" aria-label="mihomo 服务开关"><span></span></button>
         </div>
       </section>
 
@@ -181,7 +200,6 @@
             <h2 class="mh-h3">更新</h2>
             <div class="mh-meta mh-mono">VERSION</div>
           </div>
-          <button id="updates-check" class="mh-btn mh-btn--soft svc-state" type="button">检查更新</button>
           <button class="mh-icon-btn svc-toggle" type="button" aria-expanded="true"
                   aria-controls="body-updates" aria-label="展开或收起更新">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -189,10 +207,16 @@
             </svg>
           </button>
         </div>
+        <p class="mh-card__desc">配置页与内核的版本对比</p>
 
         <div class="svc-body" id="body-updates">
-          <div id="update-list"><p class="svc-summary">点「检查更新」对比 GitHub 最新版本</p></div>
+          <div id="update-list"><p class="mh-meta">点「检查更新」对比 GitHub 最新版本</p></div>
           <p class="mh-meta">程序本体与 mihomo 直接从 GitHub 更新；amane 服务端只能随镜像更新。下载走国外线路，慢时可能等几分钟。</p>
+        </div>
+
+        <div class="mh-card__foot">
+          <span class="mh-meta">amane 只能随镜像更新</span>
+          <button id="updates-check" class="mh-btn" type="button">检查更新</button>
         </div>
       </section>
     </div>

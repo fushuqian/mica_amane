@@ -1,5 +1,15 @@
 # 变更记录
 
+## 2026-10-29
+
+- 配置页按 `MICA-UI.md` 规范重写布局：新增 Hero 区（`mh-eyebrow` + `mh-display` + `mh-lede` + 右侧 System 玻璃面板），卡片改用规范 `.mh-grid`（`auto-fill minmax(292px,1fr)`，桌面 3 列、≤1000px 逐级降为 2 列/单列）。
+- 三张卡片结构统一为 `.mh-card__head` / `.mh-card__desc` / `.mh-card__foot`：mihomo 服务开关从卡片头移到卡片底栏，更新卡片的「检查更新」主按钮移入底栏。
+- 更新卡片由自定义行改为规范 `.mh-table`（组件 / 当前 / 最新 / 操作）；空态改用 `.mh-empty`，提示统一为 `.mh-meta`。
+- 状态类统一为 `.is-*`：卡片折叠 `is-collapsed`、向导自检 `is-ok` / `is-warn`；移除 `.hint` / `.wizard-text` / `.update-row` 等旧类。
+- 间距与字号对齐规范刻度（区块 44、卡片间距 18、段内 14），`style.css` 保持零硬编码色值。
+- 新增卡片指针光晕（`--mx` / `--my`），实现规范 §4.3。
+- 字体按"纯系统回退"处理：不引外部 CDN、不放 woff2，依赖令牌里的 HarmonyOS/PingFang/雅黑/Consolas 回退链。
+
 ## 2026-10-28
 
 - 配置页整体改用 Mica UI 设计语言：令牌化配色、雾面玻璃面板、999px 胶囊顶栏、大圆角卡片、青绿强调色与光斑背景；新增 `mica-ui.css` 与 `theme.js`。

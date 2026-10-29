@@ -54,7 +54,7 @@
   }
 
   function checkRow(ok, label, hint) {
-    return `<li class="wizard-check ${ok ? 'ok' : 'warn'}">
+    return `<li class="wizard-check ${ok ? 'is-ok' : 'is-warn'}">
       <span class="mark">${ok ? '✓' : '!'}</span>
       <span class="check-text"><strong>${esc(label)}</strong>${
         hint ? `<em>${esc(hint)}</em>` : ''
@@ -71,9 +71,9 @@
       : '已检测到现有登录保护，向导只做初始化检查与引导。';
     return `
       <h3 class="mh-h3">欢迎使用 Mica Amane</h3>
-      <p class="wizard-text">这是首次启动向导，会依次完成环境自检、订阅导入、amane 出网代理和登录账号设置。</p>
+      <p class="mh-card__desc">这是首次启动向导，会依次完成环境自检、订阅导入、amane 出网代理和登录账号设置。</p>
       <div class="mh-note">${esc(notice)}</div>
-      <p class="hint">随时可以关闭，之后从顶栏「设置向导」重新打开。</p>`;
+      <p class="mh-meta">随时可以关闭，之后从顶栏「设置向导」重新打开。</p>`;
   }
 
   async function renderChecks() {
@@ -97,7 +97,7 @@
 
     return `
       <h3 class="mh-h3">环境自检</h3>
-      <p class="wizard-text">以下项目有问题不影响继续，但建议先处理。</p>
+      <p class="mh-card__desc">以下项目有问题不影响继续，但建议先处理。</p>
       <ul class="wizard-checks">
         ${checkRow(!secretDefault, 'CLASH_SECRET', secretDefault ? '仍是示例默认值，请去 .env 修改后重启' : '已自定义')}
         ${checkRow(authOk, '登录保护', authHint)}
@@ -109,12 +109,12 @@
   function renderSubscribe() {
     return `
       <h3 class="mh-h3">导入订阅</h3>
-      <p class="wizard-text">粘贴机场订阅地址，导入后会立即热加载。</p>
+      <p class="mh-card__desc">粘贴机场订阅地址，导入后会立即热加载。</p>
       <div class="wizard-form">
         <input id="wizard-sub-url" class="mh-input mh-input--boxed" type="url" placeholder="https://example.com/sub?token=..." spellcheck="false" aria-label="订阅地址">
         <button id="wizard-sub-import" class="mh-btn mh-btn--accent" type="button">导入</button>
       </div>
-      <p id="wizard-sub-status" class="hint">不导入也可以先跳过，稍后在首页导入。</p>`;
+      <p id="wizard-sub-status" class="mh-meta">不导入也可以先跳过，稍后在首页导入。</p>`;
   }
 
   function bindSubscribe() {
@@ -158,13 +158,13 @@
       : (cfg.proxy || '未设置');
     return `
       <h3 class="mh-h3">amane 出网代理</h3>
-      <p class="wizard-text">开启后 amane 经容器内 mihomo 出网（http://127.0.0.1:7890）。</p>
+      <p class="mh-card__desc">开启后 amane 经容器内 mihomo 出网（http://127.0.0.1:7890）。</p>
       <div class="wizard-toggle">
         <button id="wizard-proxy-switch" class="mh-switch" role="switch"
                 aria-checked="${on ? 'true' : 'false'}" aria-label="amane 出网代理"><span></span></button>
         <span id="wizard-proxy-value" class="svc-value">${esc(value)}</span>
       </div>
-      <p class="hint">可以跳过，之后在首页随时开关。</p>`;
+      <p class="mh-meta">可以跳过，之后在首页随时开关。</p>`;
   }
 
   function bindProxy() {
@@ -200,12 +200,12 @@
     }
     return `
       <h3 class="mh-h3">Token 与入口</h3>
-      <p class="wizard-text">amane 的 API Token，登入 amane 或接第三方工具时需要。</p>
+      <p class="mh-card__desc">amane 的 API Token，登入 amane 或接第三方工具时需要。</p>
       <div class="wizard-token">
         <code id="wizard-token-value" class="mh-code">${esc(token || '（未生成）')}</code>
         <button id="wizard-token-copy" class="mh-btn mh-btn--soft" type="button">复制</button>
       </div>
-      <p class="hint">
+      <p class="mh-meta">
         <a href="${esc(amaneUrl())}" target="_blank" rel="noopener">打开 amane 页面</a>
       </p>`;
   }
@@ -238,7 +238,7 @@
 
     return `
       <h3 class="mh-h3">设置管理员账号</h3>
-      <p class="wizard-text">${esc(sourceHint)}</p>
+      <p class="mh-card__desc">${esc(sourceHint)}</p>
       <div class="wizard-form wizard-form-col">
         <label>用户名
           <input id="wizard-user" class="mh-input mh-input--boxed" type="text" value="${esc(username)}" autocomplete="username">
@@ -251,7 +251,7 @@
           <input id="wizard-pass2" class="mh-input mh-input--boxed" type="password" placeholder="再次输入" autocomplete="new-password">
         </label>
       </div>
-      <p class="hint" id="wizard-account-hint">
+      <p class="mh-meta" id="wizard-account-hint">
         ${source === 'none'
           ? '设置后立即启用登录保护，浏览器会要求重新输入账号密码。'
           : '随时可以在顶栏重新打开向导修改。'}
@@ -327,7 +327,7 @@
     updateChrome();
     const body = $('#wizard-body');
     if (!body) return;
-    body.innerHTML = '<p class="hint">加载中…</p>';
+    body.innerHTML = '<p class="mh-meta">加载中…</p>';
     state.nextHandler = () => go(state.step + 1);
 
     try {
@@ -349,7 +349,7 @@
         state.nextHandler = finishAccount;
       }
     } catch (err) {
-      body.innerHTML = `<p class="hint">加载失败：${esc(err.message)}</p>`;
+      body.innerHTML = `<p class="mh-meta">加载失败：${esc(err.message)}</p>`;
     }
   }
 
