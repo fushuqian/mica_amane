@@ -224,7 +224,8 @@ select:focus { border-color: var(--mh-accent-line); background: var(--mh-surface
   inset: 0;
   z-index: 70;
   display: grid;
-  place-items: end center;
+  place-items: center;
+  padding: 22px;
   pointer-events: none;
   visibility: hidden;
   transition: visibility 0s linear .55s;
@@ -248,9 +249,8 @@ select:focus { border-color: var(--mh-accent-line); background: var(--mh-surface
 
 .stage {
   position: relative;
-  width: min(720px, calc(100% - 28px));
+  width: min(720px, 100%);
   max-height: min(86vh, 860px);
-  margin-bottom: 14px;
   border-radius: var(--mh-radius-lg);
   overflow: hidden;
   display: flex;
@@ -261,8 +261,8 @@ select:focus { border-color: var(--mh-accent-line); background: var(--mh-surface
   border: 1px solid var(--mh-glass-border);
   box-shadow: var(--mh-shadow-hi);
   opacity: 0;
-  transform: translateY(28px) scale(.985);
-  transition: transform .55s var(--mh-ease), opacity .4s var(--mh-ease);
+  transform: translateY(10px) scale(.97);
+  transition: transform .45s var(--mh-ease), opacity .35s var(--mh-ease);
 }
 .stage-wrap.open .stage { opacity: 1; transform: none; }
 
@@ -307,6 +307,67 @@ select:focus { border-color: var(--mh-accent-line); background: var(--mh-surface
 .stage-body { flex: 1; padding: 22px; overflow: auto; }
 .stage-body .svc-body { display: block; margin-top: 0; }
 .stage-body .svc-section:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+
+/* ---------- 更新页 ---------- */
+
+.updates-head { margin-bottom: 28px; }
+.updates-head .mh-display { font-size: clamp(34px, 4.6vw, 58px); }
+
+.updates-panel { padding: 24px 26px; }
+.updates-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.updates-note { margin-top: 16px; }
+
+/* ---------- 登录页 ---------- */
+
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 40px 22px;
+}
+.login-panel { width: min(420px, 100%); padding: 28px 30px 26px; }
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.login-title {
+  font-family: var(--mh-font-d);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.1;
+}
+.login-panel .mh-meta { margin-top: 8px; }
+
+.login-form { display: grid; gap: 14px; margin-top: 24px; }
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--mh-text-3);
+}
+.login-form .mh-btn { margin-top: 6px; }
+
+.login-error {
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: var(--mh-warn-text);
+  background: var(--mh-warn-bg);
+  border: 1px solid var(--mh-warn-line);
+  border-radius: 12px;
+  padding: 9px 13px;
+}
 
 /* ---------- 向导 ---------- */
 
@@ -373,6 +434,7 @@ select:focus { border-color: var(--mh-accent-line); background: var(--mh-surface
 @media (max-width: 640px) {
   main { padding: 44px 0 44px; }
   .topbar-extra { display: none; }
-  .stage { width: calc(100% - 16px); max-height: 92vh; }
+  .stage-wrap { padding: 12px; }
+  .stage { max-height: 92vh; }
   .stage-body { padding: 16px; }
 }
