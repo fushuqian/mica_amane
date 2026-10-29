@@ -74,21 +74,146 @@ async function loadAvatar() {
   }
 }
 
+const crop = {
+  imgEl: null,
+  naturalW: 0,
+  naturalH: 0,
+  baseK: 1,
+  k: 1,
+  left: 0,
+  top: 0,
+  dragging: false,
+  startX: 0,
+  startY: 0,
+  startLeft: 0,
+  startTop: 0,
+};
+
+function cropBoxSize() {
+  return $('#crop-box').clientWidth;
+}
+
+function clampCrop() {
+  const box = cropBoxSize();
+  const width = crop.naturalW * crop.k;
+  const height = crop.naturalH * crop.k;
+  crop.left = Math.min(0, Math.max(box - width, crop.left));
+  crop.top = Math.min(0, Math.max(box - height, crop.top));
+}
+
+function layoutCrop() {
+  const width = crop.naturalW * crop.k;
+  const height = crop.naturalH * crop.k;
+  crop.imgEl.style.width = `${width}px`;
+  crop.imgEl.style.height = `${height}px`;
+  clampCrop();
+  crop.imgEl.style.left = `${crop.left}px`;
+  crop.imgEl.style.top = `${crop.top}px`;
+}
+
+function openCrop(dataUrl) {
+  const modal = $('#crop-modal');
+  modal.classList.add('is-open');
+  modal.setAttribute('aria-hidden', 'false');
+
+  const probe = new Image();
+  probe.onload = () => {
+    crop.naturalW = probe.naturalWidth;
+    crop.naturalH = probe.naturalHeight;
+    crop.imgEl = $('#crop-img');
+    crop.imgEl.src = dataUrl;
+
+    const box = cropBoxSize();
+    crop.baseK = Math.max(box / crop.naturalW, box / crop.naturalH);
+    crop.k = crop.baseK;
+    crop.left = (box - crop.naturalW * crop.k) / 2;
+    crop.top = (box - crop.naturalH * crop.k) / 2;
+    $('#crop-zoom').value = '1';
+    layoutCrop();
+    $('#crop-confirm').focus();
+  };
+  probe.src = dataUrl;
+}
+
+function closeCrop() {
+  const modal = $('#crop-modal');
+  modal.classList.remove('is-open');
+  modal.setAttribute('aria-hidden', 'true');
+  crop.dragging = false;
+  $('#avatar-file').value = '';
+}
+
+function confirmCrop() {
+  if (!crop.imgEl || !crop.naturalW) return;
+  const box = cropBoxSize();
+  const srcW = box / crop.k;
+  const srcH = box / crop.k;
+  const sx = Math.min(Math.max(0, -crop.left / crop.k), crop.naturalW - srcW);
+  const sy = Math.min(Math.max(0, -crop.top / crop.k), crop.naturalH - srcH);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  canvas.getContext('2d').drawImage(crop.imgEl, sx, sy, srcW, srcH, 0, 0, 256, 256);
+
+  pendingAvatar = canvas.toDataURL('image/png');
+  showPreview(pendingAvatar);
+  $('#avatar-save').disabled = false;
+  closeCrop();
+}
+
 $('#avatar-file').addEventListener('change', (event) => {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
-  if (file.size > 512 * 1024) {
-    toast('图片不能超过 512KB', true);
-    event.target.value = '';
-    return;
-  }
   const reader = new FileReader();
-  reader.onload = () => {
-    pendingAvatar = String(reader.result || '');
-    showPreview(pendingAvatar);
-    $('#avatar-save').disabled = !pendingAvatar;
-  };
+  reader.onload = () => openCrop(String(reader.result || ''));
   reader.readAsDataURL(file);
+});
+
+$('#crop-zoom').addEventListener('input', (event) => {
+  if (!crop.imgEl || !crop.naturalW) return;
+  const box = cropBoxSize();
+  const zoom = Number(event.target.value) || 1;
+  // 以裁剪框中心为锚点缩放
+  const centerX = (box / 2 - crop.left) / crop.k;
+  const centerY = (box / 2 - crop.top) / crop.k;
+  crop.k = crop.baseK * zoom;
+  crop.left = box / 2 - centerX * crop.k;
+  crop.top = box / 2 - centerY * crop.k;
+  layoutCrop();
+});
+
+const cropBox = $('#crop-box');
+cropBox.addEventListener('pointerdown', (event) => {
+  if (!crop.imgEl) return;
+  crop.dragging = true;
+  crop.startX = event.clientX;
+  crop.startY = event.clientY;
+  crop.startLeft = crop.left;
+  crop.startTop = crop.top;
+  cropBox.setPointerCapture(event.pointerId);
+});
+cropBox.addEventListener('pointermove', (event) => {
+  if (!crop.dragging) return;
+  crop.left = crop.startLeft + (event.clientX - crop.startX);
+  crop.top = crop.startTop + (event.clientY - crop.startY);
+  clampCrop();
+  crop.imgEl.style.left = `${crop.left}px`;
+  crop.imgEl.style.top = `${crop.top}px`;
+});
+cropBox.addEventListener('pointerup', () => {
+  crop.dragging = false;
+});
+cropBox.addEventListener('pointercancel', () => {
+  crop.dragging = false;
+});
+
+$('#crop-confirm').addEventListener('click', confirmCrop);
+$('#crop-cancel').addEventListener('click', closeCrop);
+$('#crop-close').addEventListener('click', closeCrop);
+$('#crop-scrim').addEventListener('click', closeCrop);
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && $('#crop-modal').classList.contains('is-open')) closeCrop();
 });
 
 $('#avatar-save').addEventListener('click', async () => {

@@ -486,6 +486,50 @@ select:focus { border-color: var(--mh-accent-line); background: var(--mh-surface
 }
 .settings-form .mh-btn { margin-top: 4px; justify-self: start; }
 
+/* ---------- 头像裁剪 ---------- */
+
+#crop-modal { place-items: center; padding: 22px; }
+.crop-panel {
+  width: min(420px, 100%);
+  height: auto;
+  max-height: min(88vh, 720px);
+  margin-bottom: 0;
+}
+.crop-panel .mh-modal__body { padding: 20px; }
+
+.crop-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--mh-line);
+  background: var(--mh-soft);
+  cursor: grab;
+  touch-action: none;
+}
+.crop-box:active { cursor: grabbing; }
+.crop-box img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.crop-zoom { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.crop-zoom input { flex: 1; accent-color: var(--mh-accent); }
+
+.crop-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 20px 20px;
+}
+
 /* ---------- 向导 ---------- */
 
 .wizard-foot {

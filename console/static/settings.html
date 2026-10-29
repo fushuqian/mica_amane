@@ -84,7 +84,7 @@
             <button id="avatar-save" class="mh-btn mh-btn--accent" type="button" disabled>保存头像</button>
           </div>
         </div>
-        <p class="mh-meta">支持 PNG / JPEG / WEBP / GIF，不超过 512KB。</p>
+        <p class="mh-meta">支持 PNG / JPEG / WEBP / GIF，选图后可拖动缩放裁剪，保存为 256×256。</p>
       </section>
 
       <section class="mh-card">
@@ -120,6 +120,39 @@
       </section>
     </div>
   </main>
+
+  <div class="mh-modal" id="crop-modal" aria-hidden="true">
+    <div class="mh-modal__scrim" id="crop-scrim"></div>
+    <section class="mh-modal__panel crop-panel" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+      <header class="mh-modal__head">
+        <div class="mh-icon mh-tone-a">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 3v14a2 2 0 0 0 2 2h12"/>
+            <path d="M3 7h14a2 2 0 0 1 2 2v12"/>
+          </svg>
+        </div>
+        <div class="mh-modal__title">
+          <b id="crop-title">裁剪头像</b>
+          <span>DRAG · ZOOM</span>
+        </div>
+        <button class="mh-modal__close" id="crop-close" type="button" aria-label="关闭">✕</button>
+      </header>
+      <div class="mh-modal__body">
+        <div class="crop-box" id="crop-box">
+          <img id="crop-img" alt="待裁剪图片" draggable="false">
+        </div>
+        <label class="crop-zoom">
+          <span class="mh-meta">缩放</span>
+          <input id="crop-zoom" type="range" min="1" max="3" step="0.01" value="1" aria-label="缩放图片">
+        </label>
+        <p class="mh-meta">拖动图片选择位置，滑动缩放，保存为 256×256。</p>
+      </div>
+      <footer class="crop-foot">
+        <button id="crop-cancel" class="mh-btn mh-btn--soft" type="button">取消</button>
+        <button id="crop-confirm" class="mh-btn mh-btn--accent" type="button">使用此图</button>
+      </footer>
+    </section>
+  </div>
 
   <div class="mh-toast" id="mh-toast" role="status" aria-live="polite">
     <span class="mh-toast__icon" id="mh-toast-icon">✓</span>
